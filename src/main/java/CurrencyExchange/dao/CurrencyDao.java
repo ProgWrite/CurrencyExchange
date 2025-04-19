@@ -1,8 +1,10 @@
 package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
-import CurrencyExchange.util.ConnectionManager;
+import CurrencyExchange.util.SQLConnectionManager;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,15 +29,17 @@ public class CurrencyDao implements Dao<Long, Currencies> {
 
     @Override
     public List<Currencies> findAll() {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL)) {
-            var resultSet = preparedStatement.executeQuery();
-            List<Currencies> currencies = new ArrayList<>();
-            while (resultSet.next()) {
-                currencies.add(buildCurrency(resultSet));
-            }
-            return currencies;
+        List<Currencies> currencies = new ArrayList<>();
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
+                 ResultSet resultSet = statement.executeQuery()) {
 
+                while (resultSet.next()) {
+                    currencies.add(buildCurrency(resultSet));
+                }
+
+                return currencies;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

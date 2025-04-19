@@ -8,12 +8,16 @@ public class CurrencyDto {
     private final long id;
     private final String code;
     private final String fullName;
+    private final String sign;
 
-    public CurrencyDto(long id, String code, String fullName) {
+    public CurrencyDto(long id, String code, String fullName, String sign) {
         this.id = id;
         this.code = code;
         this.fullName = fullName;
+        this.sign = sign;
     }
+
+
 
     public long getId() {
         return id;
@@ -25,6 +29,10 @@ public class CurrencyDto {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public String getSign() {
+        return sign;
     }
 
     @Override
@@ -46,6 +54,7 @@ public class CurrencyDto {
                 "id=" + id +
                 ", code='" + code + '\'' +
                 ", fullName='" + fullName + '\'' +
+                ", sign='" + sign + '\'' +
                 '}';
     }
 }

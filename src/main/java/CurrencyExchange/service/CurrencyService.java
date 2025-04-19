@@ -25,7 +25,8 @@ public class CurrencyService {
                 .map(currencies -> new CurrencyDto(
                         currencies.getId(),
                         currencies.getCode(),
-                        currencies.getFullName()
+                        currencies.getFullName(),
+                        currencies.getSign()
                 ))
                 .collect(Collectors.toList());
     }
