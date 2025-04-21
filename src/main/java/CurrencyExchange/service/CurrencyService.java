@@ -42,4 +42,33 @@ public class CurrencyService {
        );
        return currencyDto;
     }
+
+
+    //TODO здесь понадобится exception
+
+    public CurrencyDto saveCurrency(CurrencyDto currencyDto) {
+        Currencies currency = new Currencies();
+        currency.setCode(currencyDto.getCode());
+        currency.setFullName(currencyDto.getFullName());
+        currency.setSign(currencyDto.getSign());
+
+        Currencies newCurrency = currencyDao.save(currency);
+
+        CurrencyDto newCurrencyDto = new CurrencyDto(
+                newCurrency.getId(),
+                newCurrency.getCode(),
+                newCurrency.getFullName(),
+                newCurrency.getSign()
+        );
+        return newCurrencyDto;
+    }
+
+
+
+
+
+
+
+
+
 }

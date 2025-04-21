@@ -18,6 +18,13 @@ public class CurrencyDto {
     }
 
 
+    //TODO возможно это полная херня, надо смотреть
+    public CurrencyDto(String code, String fullName, String sign) {
+        this(0L, code, fullName, sign);
+    }
+
+
+
 
     public long getId() {
         return id;

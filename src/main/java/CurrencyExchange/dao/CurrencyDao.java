@@ -25,6 +25,10 @@ public class CurrencyDao implements Dao<Long, Currencies> {
     WHERE code = ?
     """;
 
+    private final static String SAVE_CURRENCY = """
+            INSERT INTO Currencies(code, fullname, sign)
+            VALUES (?, ?, ?)
+            """;
 
 
     private CurrencyDao() {
@@ -51,7 +55,9 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
-    //TODO может быть здесь нужен Optional, надо уточнять
+    //TODO может быть здесь нужен Optional, надо уточнять. Что из этого больше похоже на "взрослый"
+    // подход к решению такой дилеммы (эту фразу можно искать по поиску в чате java)
+
 
     public Currencies findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -69,6 +75,22 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
+    @Override
+    public Currencies save(Currencies currency) {
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(SAVE_CURRENCY);
+            statement.setString(1, currency.getCode());
+            statement.setString(2, currency.getFullName());
+            statement.setString(3, currency.getSign());
+            statement.execute();
+            ResultSet resultSet = statement.getGeneratedKeys();
+            currency.setId(resultSet.getLong(1));
+            return currency;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
     //TODO возможно этот метод вообще не нужен будет, так как есть другой. Тогда надо будет убрать из интерфейса тоже.
@@ -78,15 +100,15 @@ public class CurrencyDao implements Dao<Long, Currencies> {
     }
 
 
+
+
+
     @Override
     public void update(Currencies entity) {
 
     }
 
-    @Override
-    public Currencies save(Currencies entity) {
-        return null;
-    }
+
 
     private Currencies buildCurrency(ResultSet resultSet) throws SQLException {
         return new Currencies(

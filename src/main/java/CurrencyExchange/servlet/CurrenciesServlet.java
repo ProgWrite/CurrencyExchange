@@ -1,5 +1,6 @@
 package CurrencyExchange.servlet;
 
+import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,24 @@ public class CurrenciesServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
         out.print(json);
         out.flush();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        String code = req.getParameter("code");
+        String name = req.getParameter("fullname");
+        String sign = req.getParameter("sign");
+        CurrencyDto currencyDTO = new CurrencyDto(code,name,sign);
+        CurrencyDto addedCurrency = currencyService.saveCurrency(currencyDTO);
+
+        Gson gson = new Gson();
+        String jsonResponse = gson.toJson(addedCurrency);
+        PrintWriter out = resp.getWriter();
+        out.print(jsonResponse);
+        out.flush();
+
     }
 }
 

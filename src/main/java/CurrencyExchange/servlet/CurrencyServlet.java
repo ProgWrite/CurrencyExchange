@@ -1,5 +1,6 @@
 package CurrencyExchange.servlet;
 
+import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,7 @@ public class CurrencyServlet extends HttpServlet {
     private final CurrencyService currencyService = CurrencyService.getInstance();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest     req, HttpServletResponse resp) throws ServletException, IOException {
 
         String pathInfo = req.getPathInfo();
         resp.setContentType("application/json");
@@ -32,4 +33,6 @@ public class CurrencyServlet extends HttpServlet {
         out.print(json);
         out.flush();
     }
+
+
 }
