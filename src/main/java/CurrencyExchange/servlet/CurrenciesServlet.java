@@ -12,24 +12,24 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
-
-
-@WebServlet("/currency/*")
-public class CurrencyServlet extends HttpServlet {
+@WebServlet ("/currencies")
+public class CurrenciesServlet extends HttpServlet {
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        String pathInfo = req.getPathInfo();
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
         Gson gson = new Gson();
-        String code = pathInfo.substring(1);
-        String json = gson.toJson(currencyService.getCurrencyByCode(code));
+        String json = gson.toJson(currencyService.findAll());
         PrintWriter out = resp.getWriter();
         out.print(json);
         out.flush();
     }
 }
+
+
+
+
+
