@@ -25,6 +25,13 @@ public class CurrencyDao implements Dao<Long, Currencies> {
     WHERE code = ?
     """;
 
+    private final static String FIND_BY_ID = """
+    SELECT * FROM Currencies
+    WHERE id = ?
+    """;
+
+
+
     private final static String SAVE_CURRENCY = """
             INSERT INTO Currencies(code, fullname, sign)
             VALUES (?, ?, ?)
@@ -75,6 +82,28 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
+    //TODO возможно этот метод вообще не нужен будет, так как есть другой. Тогда надо будет убрать из интерфейса тоже.
+    // Здесь есть дублирование кода
+    @Override
+    public Currencies findById(Long id) {
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(FIND_BY_ID);
+            statement.setLong(1, id);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return (buildCurrency(resultSet));
+            } else {
+                throw new NoSuchElementException("currency not found");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
     @Override
     public Currencies save(Currencies currency) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -93,22 +122,12 @@ public class CurrencyDao implements Dao<Long, Currencies> {
 
 
 
-    //TODO возможно этот метод вообще не нужен будет, так как есть другой. Тогда надо будет убрать из интерфейса тоже.
-    @Override
-    public Optional<Currencies> findById(Long id) {
-        return Optional.empty();
-    }
-
-
-
 
 
     @Override
     public void update(Currencies entity) {
 
     }
-
-
 
     private Currencies buildCurrency(ResultSet resultSet) throws SQLException {
         return new Currencies(

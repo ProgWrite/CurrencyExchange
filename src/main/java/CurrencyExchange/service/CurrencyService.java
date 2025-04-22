@@ -26,7 +26,8 @@ public class CurrencyService {
         return currencyDao.findAll().stream()
                 .map(currencies -> new CurrencyDto(
                         currencies.getId(),
-                        currencies.getCode(), currencies.getFullName(),
+                        currencies.getCode(),
+                        currencies.getFullName(),
                         currencies.getSign()
                 ))
                 .collect(Collectors.toList());
@@ -42,6 +43,22 @@ public class CurrencyService {
        );
        return currencyDto;
     }
+
+    public CurrencyDto getCurrencyById(long id) {
+        Currencies currency =  currencyDao.findById(id);
+        CurrencyDto currencyDto = new CurrencyDto(
+                currency.getId(),
+                currency.getCode(),
+                currency.getFullName(),
+                currency.getSign()
+        );
+        return currencyDto;
+    }
+
+
+
+
+
 
 
     //TODO здесь понадобится exception
