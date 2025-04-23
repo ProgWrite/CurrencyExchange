@@ -82,8 +82,8 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
-    //TODO возможно этот метод вообще не нужен будет, так как есть другой. Тогда надо будет убрать из интерфейса тоже.
-    // Здесь есть дублирование кода
+    //TODO Здесь есть дублирование кода c другим методом. Надо подумать, мб все это в интерфейс потом
+
     @Override
     public Currencies findById(Long id) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -100,7 +100,6 @@ public class CurrencyDao implements Dao<Long, Currencies> {
             throw new RuntimeException(e);
         }
     }
-
 
 
 

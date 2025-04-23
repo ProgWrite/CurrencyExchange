@@ -18,6 +18,11 @@ public class ExchangeRatesDto {
         this.rate = rate;
     }
 
+    public ExchangeRatesDto(CurrencyDto baseCurrencyId, CurrencyDto targetCurrencyId, BigDecimal rate){
+        this(0L, baseCurrencyId, targetCurrencyId, rate);
+    }
+
+
     public long getId() {
         return id;
     }

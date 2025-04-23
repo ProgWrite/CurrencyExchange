@@ -9,10 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 //TODO дублирование кода в переменных, в методах, мб что-то можно придумать
 
@@ -25,16 +22,27 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
     SELECT * FROM ExchangeRates
     """;
 
+    private final static String FIND_BY_CODE = """
+            SELECT er.id, er.BaseCurrencyId, er.TargetCurrencyId, er.Rate
+            FROM ExchangeRates er
+            JOIN Currencies bc ON (er.BaseCurrencyId = bc.id )
+            JOIN Currencies tc ON (er.TargetCurrencyId = tc.id)
+            WHERE bc.code = ? AND tc.code = ?;
+            """;
+
+    private final static String ADD_EXCHANGE_RATE = """
+            INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) 
+            VALUES (?, ?, ?);
+            """;
+
 
     private ExchangeRatesDao() {
 
     }
 
-
     public static ExchangeRatesDao getInstance() {
         return INSTANCE;
     }
-
 
     @Override
     public List<ExchangeRates> findAll() {
@@ -51,6 +59,24 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
         }
     }
 
+    public ExchangeRates findByCode(String code) {
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
+            String baseCurrency = code.substring(0, 3);
+            String targetCurrency = code.substring(3, 6);
+            statement.setString(1, baseCurrency);
+            statement.setString(2, targetCurrency);
+            ResultSet resultSet = statement.executeQuery();
+
+            if(resultSet.next()) {
+                return buildExchangeRates(resultSet);
+            }else{
+                throw new NoSuchElementException("exchange rate not found");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public ExchangeRates findById(Long id) {
@@ -62,9 +88,22 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
 
     }
 
+    //TODO приведи в порядок. Везде используй add(), а не set()
+
     @Override
-    public ExchangeRates save(ExchangeRates entity) {
-        return null;
+    public ExchangeRates save(ExchangeRates exchangeRates) {
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(ADD_EXCHANGE_RATE);
+            statement.setInt(1, exchangeRates.getBaseCurrencyId());
+            statement.setInt(2, exchangeRates.getTargetCurrencyId());
+            statement.setBigDecimal(3, exchangeRates.getRate());
+            statement.execute();
+            ResultSet resultSet = statement.getGeneratedKeys();
+            exchangeRates.setId(resultSet.getLong(1));
+            return exchangeRates;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ExchangeRates buildExchangeRates(ResultSet resultSet) throws SQLException {

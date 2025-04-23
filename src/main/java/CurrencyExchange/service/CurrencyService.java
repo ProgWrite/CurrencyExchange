@@ -61,7 +61,9 @@ public class CurrencyService {
 
 
 
+
     //TODO здесь понадобится exception
+    //TODO лучше переименуй метод на save()
 
     public CurrencyDto saveCurrency(CurrencyDto currencyDto) {
         Currencies currency = new Currencies();
