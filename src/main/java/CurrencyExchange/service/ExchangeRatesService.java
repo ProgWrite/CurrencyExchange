@@ -75,4 +75,20 @@ public class ExchangeRatesService {
         );
         return addedExchangeDto;
     }
+
+    public ExchangeRatesDto updateExchangeRate(String pathInfo, BigDecimal rate) {
+        ExchangeRates updatedExchangeRate = exchangeRatesDao.findByCode(pathInfo);
+        updatedExchangeRate.setRate(rate);
+        exchangeRatesDao.update(updatedExchangeRate);
+
+        ExchangeRatesDto updatedExchangeDto = new ExchangeRatesDto(
+                updatedExchangeRate.getId(),
+                currencyService.getCurrencyById(updatedExchangeRate.getBaseCurrencyId()),
+                currencyService.getCurrencyById(updatedExchangeRate.getTargetCurrencyId()),
+                updatedExchangeRate.getRate()
+        );
+        return updatedExchangeDto;
+    }
+
+
 }

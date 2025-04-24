@@ -30,10 +30,18 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             WHERE bc.code = ? AND tc.code = ?;
             """;
 
+    //TODO возможно хватит просто "ADD", подумай об этом
+
     private final static String ADD_EXCHANGE_RATE = """
             INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) 
             VALUES (?, ?, ?);
             """;
+
+    private final static String UPDATE = """
+            UPDATE ExchangeRates SET Rate = ?
+            WHERE id = ?;
+            """;
+
 
 
     private ExchangeRatesDao() {
@@ -83,9 +91,19 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
         return null;
     }
 
-    @Override
-    public void update(ExchangeRates entity) {
 
+    //TODO тоже нужна валидация
+
+    @Override
+    public void update(ExchangeRates exchangeRates) {
+        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(UPDATE);
+            statement.setBigDecimal(1, exchangeRates.getRate());
+            statement.setLong(2, exchangeRates.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //TODO приведи в порядок. Везде используй add(), а не set()
