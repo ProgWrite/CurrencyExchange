@@ -21,6 +21,12 @@ public class ExchangeConvertDto {
         this.convertedAmount = convertedAmount;
     }
 
+    public ExchangeConvertDto(CurrencyDto baseCurrencyId, CurrencyDto targetCurrencyId, BigDecimal rate, BigDecimal amount, BigDecimal convertedAmount) {
+        this(0L, baseCurrencyId, targetCurrencyId, rate, amount, convertedAmount);
+    }
+
+
+
     public long getId() {
         return id;
     }
