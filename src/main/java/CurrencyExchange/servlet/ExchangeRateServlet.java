@@ -53,7 +53,6 @@ public class ExchangeRateServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
-
         StringBuilder sb = new StringBuilder();
         String line;
         try (BufferedReader reader = req.getReader()) {
@@ -63,32 +62,29 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         String requestBody = sb.toString();
-
-
         String[] params = requestBody.split("&");
         BigDecimal rate = null;
 
         for (String param : params) {
             String[] pair = param.split("=");
             if (pair.length == 2 && "rate".equals(pair[0])) {
-                // Декодируем значение
                 String value = URLDecoder.decode(pair[1], StandardCharsets.UTF_8.name());
                 rate = new BigDecimal(value);
                 break;
             }
         }
 
-        if (rate != null) {
-            String pathInfo = req.getPathInfo();
-            String correctPathInfo = pathInfo.substring(1);
-            ExchangeRatesDto updatedExchangeRate = exchangeRatesService.updateExchangeRate(correctPathInfo, rate);
 
-            Gson gson = new Gson();
-            String jsonResponse = gson.toJson(updatedExchangeRate);
-            PrintWriter out = resp.getWriter();
-            out.print(jsonResponse);
-            out.flush();
-        }
+        String pathInfo = req.getPathInfo();
+        String correctPathInfo = pathInfo.substring(1);
+        ExchangeRatesDto updatedExchangeRate = exchangeRatesService.updateExchangeRate(correctPathInfo, rate);
+
+        Gson gson = new Gson();
+        String jsonResponse = gson.toJson(updatedExchangeRate);
+        PrintWriter out = resp.getWriter();
+        out.print(jsonResponse);
+        out.flush();
+
     }
 }
 
