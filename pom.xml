@@ -63,6 +63,20 @@
             <version>1.7.30</version> <!-- Убедитесь, что используете совместимую версию -->
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>4.0.0.Beta5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.thetransactioncompany/cors-filter -->
+        <dependency>
+            <groupId>com.thetransactioncompany</groupId>
+            <artifactId>cors-filter</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+
+
 
     </dependencies>
 
