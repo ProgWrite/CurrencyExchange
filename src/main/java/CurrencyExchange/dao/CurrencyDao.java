@@ -63,7 +63,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
     }
 
     //TODO может быть здесь нужен Optional, надо уточнять. Что из этого больше похоже на "взрослый"
-    // подход к решению такой дилеммы (эту фразу можно искать по поиску в чате java)
+    // подход к решению такой дилеммы (эту фразу можно искать по поиску в чате java). Null здесь это заглушка, надо будет исправлять!
 
 
     public Currencies findByCode(String code) {
@@ -75,7 +75,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
             if (resultSet.next()) {
                 return buildCurrency(resultSet);
             } else {
-                throw new NoSuchElementException("currency not found");
+                return null;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

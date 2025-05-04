@@ -33,8 +33,13 @@ public class CurrencyService {
                 .collect(Collectors.toList());
     }
 
+    //TODO null быть не должно, это заглушка
+
     public CurrencyDto getCurrencyByCode(String code) {
        Currencies currency =  currencyDao.findByCode(code);
+       if(currency == null) {
+           return null;
+       }
        CurrencyDto currencyDto = new CurrencyDto(
                currency.getId(),
                currency.getCode(),
@@ -54,10 +59,6 @@ public class CurrencyService {
         );
         return currencyDto;
     }
-
-
-
-
 
 
 

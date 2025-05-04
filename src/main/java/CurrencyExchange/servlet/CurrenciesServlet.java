@@ -36,8 +36,18 @@ public class CurrenciesServlet extends HttpServlet {
         String code = req.getParameter("code");
         String name = req.getParameter("fullname");
         String sign = req.getParameter("sign");
+
+        if (isEmpty(code) || isEmpty(name) || isEmpty(sign)) {
+            requiredFormFieldErrorMessage(resp);
+            return;
+        }
+
         CurrencyDto currencyDTO = new CurrencyDto(code,name,sign);
         CurrencyDto addedCurrency = currencyService.saveCurrency(currencyDTO);
+
+        if (addedCurrency != null) {
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+        }
 
         Gson gson = new Gson();
         String jsonResponse = gson.toJson(addedCurrency);
@@ -46,6 +56,19 @@ public class CurrenciesServlet extends HttpServlet {
         out.flush();
 
     }
+
+    private void requiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"The required form field is missing. Enter the code, name and sign\"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        httpResponse.getWriter().write(jsonResponse);
+    }
+
+    private boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
 }
 
 
