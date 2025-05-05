@@ -33,7 +33,7 @@ public class CurrencyServlet extends HttpServlet {
 
         CurrencyDto currencyDto = currencyService.getCurrencyByCode(code);
         if (currencyDto == null) {
-            currencyNotExistsMessage(resp);
+            sendCurrencyNotExistsMessage(resp);
             return;
         }
 
@@ -43,7 +43,7 @@ public class CurrencyServlet extends HttpServlet {
         out.flush();
     }
 
-    private void currencyNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
+    private void sendCurrencyNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"Currency doesn't exist! Add a new currency and try again \"}";
         httpResponse.setContentType("application/json");
         httpResponse.setCharacterEncoding("UTF-8");

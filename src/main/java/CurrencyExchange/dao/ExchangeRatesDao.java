@@ -79,7 +79,7 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             if(resultSet.next()) {
                 return buildExchangeRates(resultSet);
             }else{
-                throw new NoSuchElementException("exchange rate not found");
+                return null;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

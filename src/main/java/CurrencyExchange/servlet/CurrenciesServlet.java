@@ -12,9 +12,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @WebServlet ("/currencies")
 public class CurrenciesServlet extends HttpServlet {
+
+    //TODO дублирование кода!
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
 
@@ -38,7 +41,12 @@ public class CurrenciesServlet extends HttpServlet {
         String sign = req.getParameter("sign");
 
         if (isEmpty(code) || isEmpty(name) || isEmpty(sign)) {
-            requiredFormFieldErrorMessage(resp);
+            sendRequiredFormFieldErrorMessage(resp);
+            return;
+        }
+
+        if(isCurrencyExists(code)) {
+            sendCurrencyExistErrorMessage(resp);
             return;
         }
 
@@ -57,16 +65,34 @@ public class CurrenciesServlet extends HttpServlet {
 
     }
 
-    private void requiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
+    private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The required form field is missing. Enter the code, name and sign\"}";
         httpResponse.setContentType("application/json");
         httpResponse.setCharacterEncoding("UTF-8");
-        httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         httpResponse.getWriter().write(jsonResponse);
     }
 
     private boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
+    }
+
+    public boolean isCurrencyExists(String code) {
+        List <CurrencyDto> currencies = currencyService.findAll();
+        for (CurrencyDto currency : currencies) {
+            if (currency.getCode().equals(code)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void sendCurrencyExistErrorMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"The currency you entered already exists. Please enter another one\"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
+        httpResponse.getWriter().write(jsonResponse);
     }
 
 }

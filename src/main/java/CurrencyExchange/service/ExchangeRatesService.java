@@ -42,6 +42,9 @@ public class ExchangeRatesService {
 
     public ExchangeRatesDto getExchangeRateByCode(String code) {
         ExchangeRates exchangeRate = exchangeRatesDao.findByCode(code);
+        if(exchangeRate == null) {
+            return null;
+        }
         ExchangeRatesDto exchangeRateDto = new ExchangeRatesDto(
                 exchangeRate.getId(),
                 currencyService.getCurrencyById(exchangeRate.getBaseCurrencyId()),

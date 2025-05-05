@@ -22,17 +22,25 @@ public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
 
 
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String pathInfo = req.getPathInfo();
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         Gson gson = new Gson();
         String code = pathInfo.substring(1);
 
-        String json = gson.toJson(exchangeRatesService.getExchangeRateByCode(code));
+        //TODO null это заглушка, потом нужно убрать обязательно! И далее во всех методах по цепочке такая дичь(
+        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
+
+        if(exchangeRatesDto == null){
+            sendExchangeRateNotExistsMessage(resp);
+            return;
+        }
+
+        String json = gson.toJson(exchangeRatesDto);
         PrintWriter out = resp.getWriter();
         out.print(json);
         out.flush();
@@ -42,12 +50,26 @@ public class ExchangeRateServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String method = req.getMethod();
-        if(!method.equals("PATCH")) {
+        if(method.equals("PATCH")) {
+            doPatch(req, resp);
+        }else if(method.equals("GET")) {
+            doGet(req, resp);
+        }else{
             super.service(req, resp);
         }
-        this.doPatch(req, resp);
     }
 
+
+
+
+//    @Override
+//    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        String method = req.getMethod();
+//        if(!method.equals("PATCH")) {
+//            super.service(req, resp);
+//        }
+//        this.doPatch(req, resp);
+//    }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
         resp.setContentType("application/json");
@@ -86,6 +108,16 @@ public class ExchangeRateServlet extends HttpServlet {
         out.flush();
 
     }
+
+    //TODO код дублируется(
+    private void sendExchangeRateNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"Exchange rate doesn't exist! Add a new exchange rate and try again \"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        httpResponse.getWriter().write(jsonResponse);
+    }
+
 }
 
 
