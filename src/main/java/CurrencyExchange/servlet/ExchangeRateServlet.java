@@ -1,6 +1,7 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeRatesDto;
+import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
-
+    private final CurrencyService currencyService = CurrencyService.getInstance();
 
 
     @Override
@@ -59,18 +60,6 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
 
-
-
-
-//    @Override
-//    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//        String method = req.getMethod();
-//        if(!method.equals("PATCH")) {
-//            super.service(req, resp);
-//        }
-//        this.doPatch(req, resp);
-//    }
-
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -96,9 +85,21 @@ public class ExchangeRateServlet extends HttpServlet {
             }
         }
 
+        if(rate == null){
+            sendRequiredFormFieldErrorMessage(resp);
+            return;
+        }
 
         String pathInfo = req.getPathInfo();
         String correctPathInfo = pathInfo.substring(1);
+        String baseCurrencyCode = correctPathInfo.substring(0, 3);
+        String targetCurrencyCode = correctPathInfo.substring(3, 6);
+
+        if(!isCurrenciesExists(baseCurrencyCode, targetCurrencyCode)){
+            sendExchangeRateNotExistsMessage(resp);
+            return;
+        }
+
         ExchangeRatesDto updatedExchangeRate = exchangeRatesService.updateExchangeRate(correctPathInfo, rate);
 
         Gson gson = new Gson();
@@ -116,6 +117,23 @@ public class ExchangeRateServlet extends HttpServlet {
         httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
         httpResponse.getWriter().write(jsonResponse);
+    }
+
+
+    // TODO дублирование c классом CurrenciesServlet
+    private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"The required form field is missing. Enter the rate and try again\"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        httpResponse.getWriter().write(jsonResponse);
+    }
+
+    private boolean isCurrenciesExists(String baseCurrencyCode, String targetCurrencyCode) {
+        if (currencyService.getCurrencyByCode(baseCurrencyCode) != null && currencyService.getCurrencyByCode(targetCurrencyCode) != null) {
+            return true;
+        }
+        return false;
     }
 
 }

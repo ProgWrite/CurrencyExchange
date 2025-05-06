@@ -1,8 +1,10 @@
 package CurrencyExchange.servlet;
 
+import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
+import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -15,11 +17,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.Currency;
+import java.util.List;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
 
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
+    private final CurrencyService currencyService = CurrencyService.getInstance();
 
 
     //TODO дублирование кода с Gson
@@ -45,6 +50,16 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         if(isEmpty(baseCurrencyCode) || isEmpty(targetCurrencyCode) || isEmpty(rateString)) {
             sendRequiredFormFieldErrorMessage(resp);
+            return;
+        }
+
+        if(!isCurrenciesExists(baseCurrencyCode, targetCurrencyCode)){
+            sendCurrencyNotExistsMessage(resp);
+            return;
+        }
+
+        if(isExchangeRateExists(baseCurrencyCode, targetCurrencyCode)){
+            sendExchangeRateExistsErrorMessage(resp);
             return;
         }
 
@@ -77,5 +92,52 @@ public class ExchangeRatesServlet extends HttpServlet {
         httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         httpResponse.getWriter().write(jsonResponse);
     }
+
+    private boolean isExchangeRateExists(String baseCurrencyCode, String targetCurrencyCode) {
+        List<ExchangeRatesDto> exchangeRates = exchangeRatesService.findAll();
+        CurrencyDto baseCurrency = currencyService.getCurrencyByCode(baseCurrencyCode);
+        CurrencyDto targetCurrency = currencyService.getCurrencyByCode(targetCurrencyCode);
+        String baseCode = baseCurrency.getCode();
+        String targetCode = targetCurrency.getCode();
+
+        for(ExchangeRatesDto exchangeRateDto : exchangeRates){
+            CurrencyDto checkBaseCurrency = exchangeRateDto.getBaseCurrencyId();
+            CurrencyDto checkTargetCurrency = exchangeRateDto.getTargetCurrencyId();
+            String checkBaseCode = checkBaseCurrency.getCode();
+            String checkTargetCode = checkTargetCurrency.getCode();
+
+            if(baseCode.equals(checkBaseCode) && targetCode.equals(checkTargetCode)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void sendExchangeRateExistsErrorMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"The exchange rate you entered already exists. Please enter another one\"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
+        httpResponse.getWriter().write(jsonResponse);
+    }
+
+    private boolean isCurrenciesExists(String baseCurrencyCode, String targetCurrencyCode) {
+
+        if (currencyService.getCurrencyByCode(baseCurrencyCode) != null && currencyService.getCurrencyByCode(targetCurrencyCode) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void sendCurrencyNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
+        String jsonResponse = "{\"message\": \"The currency or currencies you entered do not exist. Create currencies and try again. \"}";
+        httpResponse.setContentType("application/json");
+        httpResponse.setCharacterEncoding("UTF-8");
+        httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        httpResponse.getWriter().write(jsonResponse);
+    }
+
+
+
 
 }
