@@ -1,25 +1,23 @@
 package CurrencyExchange.dto;
 
-import CurrencyExchange.entity.Currencies;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ExchangeRatesDto {
     private final long id;
-    private final CurrencyDto baseCurrencyId;
-    private final CurrencyDto targetCurrencyId;
+    private final CurrencyDto baseCurrency;
+    private final CurrencyDto targetCurrency;
     private final BigDecimal rate;
 
-    public ExchangeRatesDto(long id, CurrencyDto baseCurrencyId, CurrencyDto targetCurrencyId, BigDecimal rate) {
+    public ExchangeRatesDto(long id, CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate) {
         this.id = id;
-        this.baseCurrencyId = baseCurrencyId;
-        this.targetCurrencyId = targetCurrencyId;
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
         this.rate = rate;
     }
 
-    public ExchangeRatesDto(CurrencyDto baseCurrencyId, CurrencyDto targetCurrencyId, BigDecimal rate){
-        this(0L, baseCurrencyId, targetCurrencyId, rate);
+    public ExchangeRatesDto(CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate){
+        this(0L, baseCurrency, targetCurrency, rate);
     }
 
 
@@ -27,12 +25,12 @@ public class ExchangeRatesDto {
         return id;
     }
 
-    public CurrencyDto getBaseCurrencyId() {
-        return baseCurrencyId;
+    public CurrencyDto getBaseCurrency() {
+        return baseCurrency;
     }
 
-    public CurrencyDto getTargetCurrencyId() {
-        return targetCurrencyId;
+    public CurrencyDto getTargetCurrency() {
+        return targetCurrency;
     }
 
     public BigDecimal getRate() {
@@ -56,8 +54,8 @@ public class ExchangeRatesDto {
     public String toString() {
         return "ExchangeRatesDto{" +
                 "id=" + id +
-                ", baseCurrencyId=" + baseCurrencyId +
-                ", targetCurrencyId=" + targetCurrencyId +
+                ", baseCurrency=" + baseCurrency +
+                ", targetCurrency=" + targetCurrency +
                 ", rate=" + rate +
                 '}';
     }

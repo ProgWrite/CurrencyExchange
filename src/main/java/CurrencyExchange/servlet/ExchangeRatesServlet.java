@@ -2,8 +2,6 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
-import CurrencyExchange.entity.Currencies;
-import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import com.google.gson.Gson;
@@ -17,7 +15,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Currency;
 import java.util.List;
 
 @WebServlet("/exchangeRates")
@@ -101,8 +98,8 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCode = targetCurrency.getCode();
 
         for(ExchangeRatesDto exchangeRateDto : exchangeRates){
-            CurrencyDto checkBaseCurrency = exchangeRateDto.getBaseCurrencyId();
-            CurrencyDto checkTargetCurrency = exchangeRateDto.getTargetCurrencyId();
+            CurrencyDto checkBaseCurrency = exchangeRateDto.getBaseCurrency();
+            CurrencyDto checkTargetCurrency = exchangeRateDto.getTargetCurrency();
             String checkBaseCode = checkBaseCurrency.getCode();
             String checkTargetCode = checkTargetCurrency.getCode();
 

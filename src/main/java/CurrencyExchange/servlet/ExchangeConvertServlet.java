@@ -1,7 +1,6 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeConvertDto;
-import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import com.google.gson.Gson;
@@ -48,7 +47,7 @@ public class ExchangeConvertServlet extends HttpServlet {
         BigDecimal amount = new BigDecimal(amountParam);
 
         Gson gson = new Gson();
-        ExchangeConvertDto exchangeConvertDto = exchangeRatesService.convert(exchangeRateCode, amount);
+        ExchangeConvertDto exchangeConvertDto = exchangeRatesService.makeExchange(exchangeRateCode, amount);
         String json = gson.toJson(exchangeConvertDto);
         PrintWriter out = resp.getWriter();
         out.print(json);

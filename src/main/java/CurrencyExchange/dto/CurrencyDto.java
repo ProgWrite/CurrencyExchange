@@ -7,20 +7,20 @@ import java.util.Objects;
 public class CurrencyDto {
     private final long id;
     private final String code;
-    private final String fullName;
+    private final String name;
     private final String sign;
 
-    public CurrencyDto(long id, String code, String fullName, String sign) {
+    public CurrencyDto(long id, String code, String name, String sign) {
         this.id = id;
         this.code = code;
-        this.fullName = fullName;
+        this.name = name;
         this.sign = sign;
     }
 
 
     //TODO возможно это полная херня, надо смотреть
-    public CurrencyDto(String code, String fullName, String sign) {
-        this(0L, code, fullName, sign);
+    public CurrencyDto(String code, String name, String sign) {
+        this(0L, code, name, sign);
     }
 
 
@@ -34,8 +34,8 @@ public class CurrencyDto {
         return code;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
     public String getSign() {
@@ -47,12 +47,12 @@ public class CurrencyDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CurrencyDto that = (CurrencyDto) o;
-        return id == that.id && Objects.equals(code, that.code) && Objects.equals(fullName, that.fullName);
+        return id == that.id && Objects.equals(code, that.code) && Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, fullName);
+        return Objects.hash(id, code, name);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class CurrencyDto {
         return "CurrencyDto{" +
                 "id=" + id +
                 ", code='" + code + '\'' +
-                ", fullName='" + fullName + '\'' +
+                ", name='" + name + '\'' +
                 ", sign='" + sign + '\'' +
                 '}';
     }

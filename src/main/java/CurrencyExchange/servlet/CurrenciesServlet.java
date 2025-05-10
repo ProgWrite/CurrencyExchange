@@ -37,7 +37,7 @@ public class CurrenciesServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
         String code = req.getParameter("code");
-        String name = req.getParameter("fullname");
+        String name = req.getParameter("name");
         String sign = req.getParameter("sign");
 
         if (isEmpty(code) || isEmpty(name) || isEmpty(sign)) {

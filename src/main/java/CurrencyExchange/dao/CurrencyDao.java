@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public class CurrencyDao implements Dao<Long, Currencies> {
 
@@ -33,7 +32,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
 
 
     private final static String SAVE_CURRENCY = """
-            INSERT INTO Currencies(code, fullname, sign)
+            INSERT INTO Currencies(code, name, sign)
             VALUES (?, ?, ?)
             """;
 
@@ -108,7 +107,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(SAVE_CURRENCY);
             statement.setString(1, currency.getCode());
-            statement.setString(2, currency.getFullName());
+            statement.setString(2, currency.getName());
             statement.setString(3, currency.getSign());
             statement.execute();
             ResultSet resultSet = statement.getGeneratedKeys();
@@ -132,7 +131,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         return new Currencies(
                 resultSet.getObject("id", Long.class),
                 resultSet.getObject("code", String.class),
-                resultSet.getObject("fullname", String.class),
+                resultSet.getObject("name", String.class),
                 resultSet.getObject("sign", String.class)
         );
     }
