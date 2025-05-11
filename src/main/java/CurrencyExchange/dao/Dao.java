@@ -7,12 +7,9 @@ public interface Dao <K,T> {
 
     List<T> findAll();
 
-
-    //TODO потом переделай на Optional этот метод, по всей цепочке!
-
-    T findById(K id);
+    Optional<T> findByCode(String code);
 
     void update(T entity);
 
-    T save(T entity);
+    T create(T entity);
 }

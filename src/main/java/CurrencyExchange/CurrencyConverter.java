@@ -4,6 +4,7 @@ import CurrencyExchange.dao.ExchangeRatesDao;
 import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.entity.ExchangeRates;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.mapper.UserMapper;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
@@ -27,14 +28,16 @@ public class CurrencyConverter {
 
 
     public ExchangeConvertDto getDirectConvertedCurrency(String exchangeRateCode, BigDecimal amount){
-        ExchangeRates exchangeRate = exchangeRatesDao.findByCode(exchangeRateCode);
+        ExchangeRates exchangeRate = exchangeRatesDao.findByCode(exchangeRateCode)
+                .orElseThrow(()-> new NotFoundException("No exchange rate found with code " + exchangeRateCode));
         BigDecimal rate = exchangeRate.getRate();
         BigDecimal convertedAmount = calculateDirectCurrency(exchangeRate, amount);
         return convertToExchangeDtoWithId(exchangeRate, amount, convertedAmount, rate);
     }
 
     public ExchangeConvertDto getReverseConvertedCurrency(String exchangeRateCode, BigDecimal amount) {
-        ExchangeRates exchangeRate = exchangeRatesDao.findByCode(exchangeRateCode);
+        ExchangeRates exchangeRate = exchangeRatesDao.findByCode(exchangeRateCode)
+                .orElseThrow(()-> new NotFoundException("No exchange rate found with code " + exchangeRateCode));
         BigDecimal rate = exchangeRate.getRate();
         BigDecimal reverseRate = BigDecimal.ONE.divide(rate, 6, BigDecimal.ROUND_HALF_UP);
         BigDecimal convertedAmount = calculateReverseCurrency(exchangeRate, amount);

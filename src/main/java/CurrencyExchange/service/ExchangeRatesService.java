@@ -7,10 +7,12 @@ import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.mapper.UserMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ExchangeRatesService {
@@ -36,22 +38,26 @@ public class ExchangeRatesService {
     }
 
     public ExchangeRatesDto getExchangeRateByCode(String code) {
-        ExchangeRates exchangeRate = exchangeRatesDao.findByCode(code);
-        if(exchangeRate == null) {
-            return null;
-        }
-        return convertToDto(exchangeRate);
+        Optional<ExchangeRates > exchangeRate = exchangeRatesDao.findByCode(code);
+
+        return exchangeRate.map(this::convertToDto)
+                        .orElseThrow(()-> new NotFoundException("No exchange rate found with code " + code));
     }
 
-    //TODO интересно это костыль или нет, мб это надо в отдельный метод (long в int). Также дублирование
+    //TODO Дублирование
 
-    public ExchangeRatesDto addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+    public ExchangeRatesDto create(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         ExchangeRates exchangeRate = new ExchangeRates();
-        Currencies baseCurrency = currencyDao.findByCode(baseCurrencyCode);
+
+        Currencies baseCurrency = currencyDao.findByCode(baseCurrencyCode)
+                .orElseThrow(()-> new NotFoundException("No currency found with code " + baseCurrencyCode));
+
         long baseCurrencyId = baseCurrency.getId();
         int baseCurrencyIdInt = (int) baseCurrencyId;
 
-        Currencies targetCurrency = currencyDao.findByCode(targetCurrencyCode);
+        Currencies targetCurrency = currencyDao.findByCode(targetCurrencyCode)
+                .orElseThrow(()-> new NotFoundException("No currency found with code " + targetCurrencyCode));
+
         long targetCurrencyId = targetCurrency.getId();
         int targetCurrencyIdInt = (int) targetCurrencyId;
 
@@ -59,12 +65,13 @@ public class ExchangeRatesService {
         exchangeRate.setTargetCurrencyId(targetCurrencyIdInt);
         exchangeRate.setRate(rate);
 
-        ExchangeRates addedExchangeRate = exchangeRatesDao.save(exchangeRate);
+        ExchangeRates addedExchangeRate = exchangeRatesDao.create(exchangeRate);
         return convertToDto(addedExchangeRate);
     }
 
     public ExchangeRatesDto updateExchangeRate(String pathInfo, BigDecimal rate) {
-        ExchangeRates updatedExchangeRate = exchangeRatesDao.findByCode(pathInfo);
+        ExchangeRates updatedExchangeRate = exchangeRatesDao.findByCode(pathInfo)
+                .orElseThrow(() -> new NotFoundException("No exchange rate found with path " + pathInfo));
         updatedExchangeRate.setRate(rate);
         exchangeRatesDao.update(updatedExchangeRate);
         return convertToDto(updatedExchangeRate);
@@ -81,15 +88,17 @@ public class ExchangeRatesService {
         ExchangeRates reverseExchangeRate = null;
         boolean isCrossRate = false;
 
-        try{
-            directExchangeRate = exchangeRatesDao.findByCode(exchangeRateCode);
-        }catch (Exception e){
+        try {
+            directExchangeRate = exchangeRatesDao.findByCode(exchangeRateCode)
+                    .orElseThrow(() -> new NotFoundException("No exchange rate found with code " + exchangeRateCode));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        try{
-            reverseExchangeRate = exchangeRatesDao.findByCode(checkReverseExchangeRateCode);
-        }catch (Exception e){
+        try {
+            reverseExchangeRate = exchangeRatesDao.findByCode(checkReverseExchangeRateCode)
+                    .orElseThrow(() -> new NotFoundException("No exchange rate found with code " + checkReverseExchangeRateCode));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -107,8 +116,12 @@ public class ExchangeRatesService {
             String code = codeForCrossRate(baseCurrencyCode, targetCurrencyCode);
             String baseCrossCode = code + baseCurrencyCode;
             String targetCrossCode = code + targetCurrencyCode;
-            ExchangeRates crossBaseExchangeRate = exchangeRatesDao.findByCode(baseCrossCode);
-            ExchangeRates crossTargetExchangeRate = exchangeRatesDao.findByCode(targetCrossCode);
+            ExchangeRates crossBaseExchangeRate = exchangeRatesDao.findByCode(baseCrossCode)
+                    .orElseThrow(()-> new NotFoundException("No exchange rate found with code " + baseCrossCode));
+
+            ExchangeRates crossTargetExchangeRate = exchangeRatesDao.findByCode(targetCrossCode)
+                    .orElseThrow(() -> new NotFoundException("No exchange rate found with code " + targetCrossCode));
+
             return  currencyConverter.getCrossCurrency(crossBaseExchangeRate, crossTargetExchangeRate, amount);
         }
         throw new IllegalArgumentException("Exchange rate code not found");
@@ -131,8 +144,10 @@ public class ExchangeRatesService {
             String checkTargetCode = checkCode + targetCurrencyCode;
 
             try {
-                ExchangeRates baseExchangeRate = exchangeRatesDao.findByCode(checkBaseCode);
-                ExchangeRates targetExchangeRate = exchangeRatesDao.findByCode(checkTargetCode);
+                ExchangeRates baseExchangeRate = exchangeRatesDao.findByCode(checkBaseCode)
+                        .orElseThrow(() -> new NotFoundException("No exchange rate found with code " + checkBaseCode));
+                ExchangeRates targetExchangeRate = exchangeRatesDao.findByCode(checkTargetCode)
+                        .orElseThrow(() -> new NotFoundException("No exchange rate found with code " + checkTargetCode));
                 if (baseExchangeRate != null && targetExchangeRate != null) {
                     return returnCode ? checkCode : "true";
                 }
@@ -142,8 +157,6 @@ public class ExchangeRatesService {
         }
         return returnCode ? "Cross Rate is not found" : "false";
     }
-
-
 
     private ExchangeRatesDto convertToDto(ExchangeRates exchangeRates) {
         return UserMapper.INSTANCE.exchangeRateToExchangeRateDtoWithId(

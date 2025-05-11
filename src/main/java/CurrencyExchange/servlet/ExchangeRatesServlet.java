@@ -62,7 +62,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         BigDecimal rate = new BigDecimal(rateString);
 
-        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.addNewExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.create(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (exchangeRatesDto != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);

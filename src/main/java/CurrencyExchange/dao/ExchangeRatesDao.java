@@ -2,6 +2,7 @@ package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
+import CurrencyExchange.exceptions.DataBaseException;
 import CurrencyExchange.util.SQLConnectionManager;
 
 import java.math.BigDecimal;
@@ -67,7 +68,7 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
         }
     }
 
-    public ExchangeRates findByCode(String code) {
+    public  Optional<ExchangeRates> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
             String baseCurrency = code.substring(0, 3);
@@ -77,19 +78,16 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             ResultSet resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                return buildExchangeRates(resultSet);
+                return Optional.of(buildExchangeRates(resultSet));
             }else{
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to find exchange rate with code " + code);
         }
     }
 
-    @Override
-    public ExchangeRates findById(Long id) {
-        return null;
-    }
+
 
 
     //TODO тоже нужна валидация
@@ -106,10 +104,10 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
         }
     }
 
-    //TODO приведи в порядок. Везде используй add(), а не set()
+
 
     @Override
-    public ExchangeRates save(ExchangeRates exchangeRates) {
+    public ExchangeRates create(ExchangeRates exchangeRates) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(ADD_EXCHANGE_RATE);
             statement.setInt(1, exchangeRates.getBaseCurrencyId());

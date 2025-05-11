@@ -3,9 +3,9 @@ package CurrencyExchange.service;
 import CurrencyExchange.dao.CurrencyDao;
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.entity.Currencies;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.mapper.UserMapper;
 
-import java.util.Currency;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,35 +28,26 @@ public class CurrencyService {
     }
 
 
-    //TODO null быть не должно, это заглушка
-
     public CurrencyDto getCurrencyByCode(String code) {
-       Currencies currency =  currencyDao.findByCode(code);
-       if(currency == null) {
-           return null;
-       }
+       Currencies currency = currencyDao.findByCode(code)
+                .orElseThrow(()-> new NotFoundException("Currency not found with code:" + code));
        return convertToDto(currency);
     }
 
-
     public CurrencyDto getCurrencyById(long id) {
-        Currencies currency =  currencyDao.findById(id);
+        Currencies currency =  currencyDao.findById(id).
+                orElseThrow(() -> new NotFoundException("Currency not found with id: " + id));
         return convertToDto(currency);
     }
 
 
     //TODO здесь понадобится exception
-    //TODO лучше переименуй метод на save()
 
-    public CurrencyDto saveCurrency(CurrencyDto currencyDto) {
+    public CurrencyDto create(CurrencyDto currencyDto) {
         Currencies currency = convertToCurrency(currencyDto);
-        Currencies newCurrency = currencyDao.save(currency);
+        Currencies newCurrency = currencyDao.create(currency);
         return convertToDto(newCurrency);
     }
-
-
-
-
 
 
     private CurrencyDto convertToDto(Currencies currency) {

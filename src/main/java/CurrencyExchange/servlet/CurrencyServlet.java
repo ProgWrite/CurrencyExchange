@@ -1,6 +1,7 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -18,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
 
-    //TODO есть дублирование в методе getByCode. Также заглушка в виде NUll!
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
 
@@ -31,17 +31,18 @@ public class CurrencyServlet extends HttpServlet {
         Gson gson = new Gson();
         String code = pathInfo.substring(1);
 
-        CurrencyDto currencyDto = currencyService.getCurrencyByCode(code);
-        if (currencyDto == null) {
+        try{
+            CurrencyDto currencyDto = currencyService.getCurrencyByCode(code);
+            String json = gson.toJson(currencyDto);
+            PrintWriter out = resp.getWriter();
+            out.print(json);
+            out.flush();
+        }catch(NotFoundException e){
             sendCurrencyNotExistsMessage(resp);
-            return;
         }
-
-        String json = gson.toJson(currencyDto);
-        PrintWriter out = resp.getWriter();
-        out.print(json);
-        out.flush();
     }
+
+
 
     private void sendCurrencyNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"Currency doesn't exist! Add a new currency and try again \"}";
@@ -50,6 +51,5 @@ public class CurrencyServlet extends HttpServlet {
         httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
         httpResponse.getWriter().write(jsonResponse);
     }
-
 
 }

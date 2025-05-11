@@ -51,7 +51,7 @@ public class CurrenciesServlet extends HttpServlet {
         }
 
         CurrencyDto currencyDTO = new CurrencyDto(code,name,sign);
-        CurrencyDto addedCurrency = currencyService.saveCurrency(currencyDTO);
+        CurrencyDto addedCurrency = currencyService.create(currencyDTO);
 
         if (addedCurrency != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);

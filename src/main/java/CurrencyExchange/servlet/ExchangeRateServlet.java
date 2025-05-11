@@ -1,6 +1,7 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeRatesDto;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import com.google.gson.Gson;
@@ -33,20 +34,19 @@ public class ExchangeRateServlet extends HttpServlet {
         Gson gson = new Gson();
         String code = pathInfo.substring(1);
 
-        //TODO null это заглушка, потом нужно убрать обязательно! И далее во всех методах по цепочке такая дичь(
-        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
-
-        if(exchangeRatesDto == null){
+        //TODO в остальных сервлетах может тоже надо такую конструкцию, надо анализировать)
+        try{
+            ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
+            String json = gson.toJson(exchangeRatesDto);
+            PrintWriter out = resp.getWriter();
+            out.print(json);
+            out.flush();
+        }catch(NotFoundException e){
             sendExchangeRateNotExistsMessage(resp);
-            return;
         }
-
-        String json = gson.toJson(exchangeRatesDto);
-        PrintWriter out = resp.getWriter();
-        out.print(json);
-        out.flush();
-
     }
+
+
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

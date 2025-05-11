@@ -1,6 +1,8 @@
 package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
+import CurrencyExchange.exceptions.DataBaseException;
+import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.util.SQLConnectionManager;
 
 import java.sql.Connection;
@@ -10,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class CurrencyDao implements Dao<Long, Currencies> {
 
@@ -57,7 +60,7 @@ public class CurrencyDao implements Dao<Long, Currencies> {
                 }
                 return currencies;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to find currencies");
         }
     }
 
@@ -65,45 +68,44 @@ public class CurrencyDao implements Dao<Long, Currencies> {
     // подход к решению такой дилеммы (эту фразу можно искать по поиску в чате java). Null здесь это заглушка, надо будет исправлять!
 
 
-    public Currencies findByCode(String code) {
+    public Optional<Currencies> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
             statement.setString(1, code);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                return buildCurrency(resultSet);
+                return Optional.of(buildCurrency(resultSet));
             } else {
-                return null;
+                return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to find currency with code " + code);
         }
     }
 
-    //TODO Здесь есть дублирование кода c другим методом. Надо подумать, мб все это в интерфейс потом
 
-    @Override
-    public Currencies findById(Long id) {
+    //TODO Здесь есть дублирование кода c методом выше, может что-то можно придумать
+
+    public   Optional<Currencies> findById(Long id) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_ID);
             statement.setLong(1, id);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                return (buildCurrency(resultSet));
+                return Optional.of((buildCurrency(resultSet)));
             } else {
-                throw new NoSuchElementException("currency not found");
+                return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to find currency with id " + id);
         }
     }
 
 
-
     @Override
-    public Currencies save(Currencies currency) {
+    public Currencies create(Currencies currency) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(SAVE_CURRENCY);
             statement.setString(1, currency.getCode());
