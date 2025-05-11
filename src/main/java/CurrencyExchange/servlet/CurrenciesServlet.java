@@ -51,7 +51,7 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
 
-    // TODO тут будет какая-то логика обработки ошибок
+    // TODO тут будет какая-то общая логика обработки ошибок, надо подумать об этом!!!
     private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The required form field is missing. Enter the code, name and sign\"}";
         httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);

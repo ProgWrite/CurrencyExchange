@@ -23,8 +23,6 @@ public class ExchangeRatesServlet extends HttpServlet {
     private final CurrencyService currencyService = CurrencyService.getInstance();
 
 
-    //TODO дублирование кода с Gson
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.findAll());

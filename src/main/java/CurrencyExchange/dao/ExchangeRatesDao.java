@@ -12,8 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-//TODO дублирование кода в переменных, в методах, мб что-то можно придумать
-
 
 public class ExchangeRatesDao implements Dao<ExchangeRates> {
 
