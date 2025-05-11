@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public class CurrencyDao implements Dao<Long, Currencies> {
+public class CurrencyDao implements Dao<Currencies> {
 
     private final static CurrencyDao INSTANCE = new CurrencyDao();
 
@@ -64,9 +64,6 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
-    //TODO может быть здесь нужен Optional, надо уточнять. Что из этого больше похоже на "взрослый"
-    // подход к решению такой дилеммы (эту фразу можно искать по поиску в чате java). Null здесь это заглушка, надо будет исправлять!
-
 
     public Optional<Currencies> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -103,7 +100,6 @@ public class CurrencyDao implements Dao<Long, Currencies> {
         }
     }
 
-
     @Override
     public Currencies create(Currencies currency) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -116,17 +112,8 @@ public class CurrencyDao implements Dao<Long, Currencies> {
             currency.setId(resultSet.getLong(1));
             return currency;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to create currency");
         }
-    }
-
-
-
-
-
-    @Override
-    public void update(Currencies entity) {
-
     }
 
     private Currencies buildCurrency(ResultSet resultSet) throws SQLException {

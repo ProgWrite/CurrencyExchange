@@ -15,7 +15,7 @@ import java.util.*;
 //TODO дублирование кода в переменных, в методах, мб что-то можно придумать
 
 
-public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
+public class ExchangeRatesDao implements Dao<ExchangeRates> {
 
     private final static ExchangeRatesDao INSTANCE = new ExchangeRatesDao();
 
@@ -31,8 +31,6 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             WHERE bc.code = ? AND tc.code = ?;
             """;
 
-    //TODO возможно хватит просто "ADD", подумай об этом
-
     private final static String ADD_EXCHANGE_RATE = """
             INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) 
             VALUES (?, ?, ?);
@@ -42,7 +40,6 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             UPDATE ExchangeRates SET Rate = ?
             WHERE id = ?;
             """;
-
 
 
     private ExchangeRatesDao() {
@@ -64,7 +61,7 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             }
             return exchangeRates;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to find exchange rates");
         }
     }
 
@@ -88,11 +85,6 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
     }
 
 
-
-
-    //TODO тоже нужна валидация
-
-    @Override
     public void update(ExchangeRates exchangeRates) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(UPDATE);
@@ -100,11 +92,9 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             statement.setLong(2, exchangeRates.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to update exchange rate with id " + exchangeRates.getId());
         }
     }
-
-
 
     @Override
     public ExchangeRates create(ExchangeRates exchangeRates) {
@@ -118,7 +108,7 @@ public class ExchangeRatesDao implements Dao<Long, ExchangeRates> {
             exchangeRates.setId(resultSet.getLong(1));
             return exchangeRates;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataBaseException("Failed to create exchange rate");
         }
     }
 

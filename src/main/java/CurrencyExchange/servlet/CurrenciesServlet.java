@@ -2,6 +2,7 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
+import CurrencyExchange.util.JsonResponseUtil;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,31 +12,21 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @WebServlet ("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    //TODO дублирование кода!
-
     private final CurrencyService currencyService = CurrencyService.getInstance();
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Gson gson = new Gson();
-        String json = gson.toJson(currencyService.findAll());
-        PrintWriter out = resp.getWriter();
-        out.print(json);
-        out.flush();
+        JsonResponseUtil.sendJsonResponse(resp, currencyService.findAll());
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         String sign = req.getParameter("sign");
@@ -56,19 +47,13 @@ public class CurrenciesServlet extends HttpServlet {
         if (addedCurrency != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);
         }
-
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(addedCurrency);
-        PrintWriter out = resp.getWriter();
-        out.print(jsonResponse);
-        out.flush();
-
+        JsonResponseUtil.sendJsonResponse(resp, addedCurrency);
     }
 
+
+    // TODO тут будет какая-то логика обработки ошибок
     private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The required form field is missing. Enter the code, name and sign\"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         httpResponse.getWriter().write(jsonResponse);
     }
@@ -87,10 +72,9 @@ public class CurrenciesServlet extends HttpServlet {
         return false;
     }
 
+
     private void sendCurrencyExistErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The currency you entered already exists. Please enter another one\"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
         httpResponse.getWriter().write(jsonResponse);
     }

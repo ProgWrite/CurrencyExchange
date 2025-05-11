@@ -4,6 +4,7 @@ import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
+import CurrencyExchange.util.JsonResponseUtil;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,24 +30,14 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String pathInfo = req.getPathInfo();
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Gson gson = new Gson();
         String code = pathInfo.substring(1);
 
-        //TODO в остальных сервлетах может тоже надо такую конструкцию, надо анализировать)
         try{
-            ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
-            String json = gson.toJson(exchangeRatesDto);
-            PrintWriter out = resp.getWriter();
-            out.print(json);
-            out.flush();
+            JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.getExchangeRateByCode(code));
         }catch(NotFoundException e){
             sendExchangeRateNotExistsMessage(resp);
         }
     }
-
-
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -61,9 +52,6 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         StringBuilder sb = new StringBuilder();
         String line;
         try (BufferedReader reader = req.getReader()) {
@@ -100,21 +88,12 @@ public class ExchangeRateServlet extends HttpServlet {
             return;
         }
 
-        ExchangeRatesDto updatedExchangeRate = exchangeRatesService.updateExchangeRate(correctPathInfo, rate);
-
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(updatedExchangeRate);
-        PrintWriter out = resp.getWriter();
-        out.print(jsonResponse);
-        out.flush();
-
+        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.update(correctPathInfo, rate));
     }
 
     //TODO код дублируется(
     private void sendExchangeRateNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"Exchange rate doesn't exist! Add a new exchange rate and try again \"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
         httpResponse.getWriter().write(jsonResponse);
     }
@@ -123,8 +102,6 @@ public class ExchangeRateServlet extends HttpServlet {
     // TODO дублирование c классом CurrenciesServlet
     private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The required form field is missing. Enter the rate and try again\"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         httpResponse.getWriter().write(jsonResponse);
     }

@@ -4,6 +4,7 @@ import CurrencyExchange.dao.CurrencyDao;
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.exceptions.NotFoundException;
+import CurrencyExchange.exceptions.ServiceException;
 import CurrencyExchange.mapper.UserMapper;
 
 import java.util.List;
@@ -41,12 +42,14 @@ public class CurrencyService {
     }
 
 
-    //TODO здесь понадобится exception
-
     public CurrencyDto create(CurrencyDto currencyDto) {
-        Currencies currency = convertToCurrency(currencyDto);
-        Currencies newCurrency = currencyDao.create(currency);
-        return convertToDto(newCurrency);
+        try{
+            Currencies currency = convertToCurrency(currencyDto);
+            Currencies newCurrency = currencyDao.create(currency);
+            return convertToDto(newCurrency);
+        }catch(RuntimeException e){
+            throw new ServiceException("Currency creation failed.");
+        }
     }
 
 

@@ -2,15 +2,15 @@ package CurrencyExchange;
 
 import CurrencyExchange.dao.ExchangeRatesDao;
 import CurrencyExchange.dto.ExchangeConvertDto;
-import CurrencyExchange.dto.ExchangeRatesDto;
+
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.mapper.UserMapper;
 import CurrencyExchange.service.CurrencyService;
-import CurrencyExchange.service.ExchangeRatesService;
+
 
 import java.math.BigDecimal;
-import java.util.Currency;
+
 
 public class CurrencyConverter {
     private final static CurrencyConverter INSTANCE = new CurrencyConverter();
@@ -41,7 +41,7 @@ public class CurrencyConverter {
         BigDecimal rate = exchangeRate.getRate();
         BigDecimal reverseRate = BigDecimal.ONE.divide(rate, 6, BigDecimal.ROUND_HALF_UP);
         BigDecimal convertedAmount = calculateReverseCurrency(exchangeRate, amount);
-        return convertToExchangeDtoWithId(exchangeRate, amount, convertedAmount, reverseRate);
+        return convertToReverseExchangeDtoWithId(exchangeRate, amount, convertedAmount, reverseRate);
     }
 
     public ExchangeConvertDto getCrossCurrency(ExchangeRates checkBaseCode, ExchangeRates checkTargetCode,BigDecimal amount) {
@@ -74,7 +74,7 @@ public class CurrencyConverter {
     }
 
 
-
+    //TODO дублирование с методом снизу
     private ExchangeConvertDto convertToExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
         return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(
                 exchangeRate.getId(),
@@ -85,6 +85,19 @@ public class CurrencyConverter {
                 convertedAmount
         );
     }
+
+
+    private ExchangeConvertDto convertToReverseExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
+        return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(
+                exchangeRate.getId(),
+                currencyService.getCurrencyById(exchangeRate.getTargetCurrencyId()),
+                currencyService.getCurrencyById(exchangeRate.getBaseCurrencyId()),
+                rate,
+                amount,
+                convertedAmount
+        );
+    }
+
 
     private ExchangeConvertDto convertToExchangeDtoWithoutId(ExchangeRates checkBaseCode, ExchangeRates checkTargetCode,  BigDecimal amount, BigDecimal convertedAmount) {
         BigDecimal baseRate = checkBaseCode.getRate();
@@ -99,22 +112,5 @@ public class CurrencyConverter {
                 convertedAmount
         );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

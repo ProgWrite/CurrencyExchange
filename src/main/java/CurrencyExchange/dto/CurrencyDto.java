@@ -1,9 +1,7 @@
 package CurrencyExchange.dto;
-
-
 import java.util.Objects;
 
-//TODO нужно будет пересмотреть эту логику (пока что тестовый вариант)
+
 public class CurrencyDto {
     private final long id;
     private final String code;
@@ -17,14 +15,9 @@ public class CurrencyDto {
         this.sign = sign;
     }
 
-
-    //TODO возможно это полная херня, надо смотреть
     public CurrencyDto(String code, String name, String sign) {
         this(0L, code, name, sign);
     }
-
-
-
 
     public long getId() {
         return id;

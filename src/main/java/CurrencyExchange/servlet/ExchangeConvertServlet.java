@@ -3,6 +3,7 @@ package CurrencyExchange.servlet;
 import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
+import CurrencyExchange.util.JsonResponseUtil;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -25,8 +26,6 @@ public class ExchangeConvertServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         String from = req.getParameter("from");
         String to = req.getParameter("to");
@@ -45,14 +44,7 @@ public class ExchangeConvertServlet extends HttpServlet {
         }
 
         BigDecimal amount = new BigDecimal(amountParam);
-
-        Gson gson = new Gson();
-        ExchangeConvertDto exchangeConvertDto = exchangeRatesService.makeExchange(exchangeRateCode, amount);
-        String json = gson.toJson(exchangeConvertDto);
-        PrintWriter out = resp.getWriter();
-        out.print(json);
-        out.flush();
-
+        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.makeExchange(exchangeRateCode, amount));
     }
 
     private boolean isEmpty(String str) {
@@ -62,8 +54,6 @@ public class ExchangeConvertServlet extends HttpServlet {
     // TODO дублирование c классом CurrenciesServlet
     private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"The required form field is missing. Enter the base currency code, target currency code, amount and try again.\"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         httpResponse.getWriter().write(jsonResponse);
     }
@@ -79,13 +69,7 @@ public class ExchangeConvertServlet extends HttpServlet {
 
     private void sendCurrencyNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
         String jsonResponse = "{\"message\": \"Base currency or target currency don't exist! Add a new currency and try again \"}";
-        httpResponse.setContentType("application/json");
-        httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
         httpResponse.getWriter().write(jsonResponse);
     }
-
-
-
-
 }
