@@ -50,23 +50,14 @@ public class ExchangeRatesService {
                         .orElseThrow(()-> new NotFoundException("No exchange rate found with code " + code));
     }
 
-    //TODO Дублирование
-
     public ExchangeRatesDto create(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         ExchangeRates exchangeRate = new ExchangeRates();
 
-        Currencies baseCurrency = currencyDao.findByCode(baseCurrencyCode)
-                .orElseThrow(()-> new NotFoundException("No currency found with code " + baseCurrencyCode));
-        long baseCurrencyId = baseCurrency.getId();
-        int baseCurrencyIdInt = (int) baseCurrencyId;
+        int baseCurrencyId =  convertCurrencyIdToInt(baseCurrencyCode);
+        int targetCurrencyId = convertCurrencyIdToInt(targetCurrencyCode);
 
-        Currencies targetCurrency = currencyDao.findByCode(targetCurrencyCode)
-                .orElseThrow(()-> new NotFoundException("No currency found with code " + targetCurrencyCode));
-        long targetCurrencyId = targetCurrency.getId();
-        int targetCurrencyIdInt = (int) targetCurrencyId;
-
-        exchangeRate.setBaseCurrencyId(baseCurrencyIdInt);
-        exchangeRate.setTargetCurrencyId(targetCurrencyIdInt);
+        exchangeRate.setBaseCurrencyId(baseCurrencyId);
+        exchangeRate.setTargetCurrencyId(targetCurrencyId);
         exchangeRate.setRate(rate);
 
         try{
@@ -84,7 +75,6 @@ public class ExchangeRatesService {
         exchangeRatesDao.update(updatedExchangeRate);
         return convertToDto(updatedExchangeRate);
     }
-
 
     public ExchangeConvertDto makeExchange(String exchangeRateCode, BigDecimal amount) {
         String baseCurrencyCode = exchangeRateCode.substring(0, 3);
@@ -159,6 +149,13 @@ public class ExchangeRatesService {
         return returnCode ? "Cross Rate is not found" : "false";
     }
 
+    private int convertCurrencyIdToInt(String currencyCode) {
+        Currencies currency = currencyDao.findByCode(currencyCode)
+                .orElseThrow(()-> new NotFoundException("No currency found with code " + currencyCode));
+        long CurrencyId = currency.getId();
+        int currencyIdInt = (int) CurrencyId;
+        return currencyIdInt;
+    }
 
     private ExchangeRatesDto convertToDto(ExchangeRates exchangeRates) {
         return UserMapper.INSTANCE.exchangeRateToExchangeRateDtoWithId(

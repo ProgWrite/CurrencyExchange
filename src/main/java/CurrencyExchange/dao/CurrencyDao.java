@@ -81,9 +81,6 @@ public class CurrencyDao implements Dao<Currencies> {
         }
     }
 
-
-    //TODO Здесь есть дублирование кода c методом выше, может что-то можно придумать
-
     public   Optional<Currencies> findById(Long id) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_ID);

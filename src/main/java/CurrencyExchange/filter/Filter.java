@@ -1,5 +1,6 @@
 package CurrencyExchange.filter;
 
+import CurrencyExchange.util.ErrorResponseHandler;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,24 +18,25 @@ public class Filter implements jakarta.servlet.Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
-        //TODO может эти 4 строки можно в отдельный метод? Тогда можно переделать метод с валидацией длины. Надо подумать об этом
-        //TODO рефакторинг кода где 4 одинаковых строки с httpResponse
-
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        String pathInfo = httpRequest.getPathInfo();
-
         String requestURI = httpRequest.getRequestURI();
 
+        String code = httpRequest.getParameter("code");
+        if(code != null && code.length() != REQUIRED_LENGTH_FOR_CURRENCY) {
+            ErrorResponseHandler.sendErrorResponse(httpResponse, HttpServletResponse.SC_BAD_REQUEST,
+                    "Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters");
+            return;
+        }
 
         if (requestURI.startsWith("/currency")) {
-            String jsonResponse = "{\"message\": \"Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters\"}";
-            if (validateStringLength(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_CURRENCY, jsonResponse)) {
+            String jsonResponse = "Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters";
+            if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_CURRENCY, jsonResponse)) {
                 return;
             }
         } else if (requestURI.startsWith("/exchangeRate/")) {
-            String jsonResponse = "{\"message\": \"Exchange Rate code must be " + REQUIRED_LENGTH_FOR_EXCHANGE_RATE + " characters\"}";
-            if (validateStringLength(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_EXCHANGE_RATE, jsonResponse)) {
+            String jsonResponse = "Exchange Rate code must be " + REQUIRED_LENGTH_FOR_EXCHANGE_RATE + " characters";
+            if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_EXCHANGE_RATE, jsonResponse)) {
                 return;
             }
         }
@@ -42,16 +44,12 @@ public class Filter implements jakarta.servlet.Filter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean validateStringLength(HttpServletRequest httpRequest, HttpServletResponse httpResponse, int requiredLength, String jsonResponse) throws IOException {
-
+    private boolean isStringLengthValid(HttpServletRequest httpRequest, HttpServletResponse httpResponse, int requiredLength, String jsonResponse) throws IOException {
         String pathInfo = httpRequest.getPathInfo();
         String code = pathInfo.substring(1);
 
         if (code.length() != requiredLength) {
-            httpResponse.setContentType("application/json");
-            httpResponse.setCharacterEncoding("UTF-8");
-            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().write(jsonResponse);
+            ErrorResponseHandler.sendErrorResponse(httpResponse, HttpServletResponse.SC_BAD_REQUEST, jsonResponse);
             return true;
         }
         return false;

@@ -2,8 +2,8 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
+import CurrencyExchange.util.ErrorResponseHandler;
 import CurrencyExchange.util.JsonResponseUtil;
-import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,13 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
+import java.util.function.Predicate;
 
 @WebServlet ("/currencies")
 public class CurrenciesServlet extends HttpServlet {
-
+    private final static int REQUIRED_LENGTH = 3;
     private final CurrencyService currencyService = CurrencyService.getInstance();
+    Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
 
 
     @Override
@@ -31,13 +32,21 @@ public class CurrenciesServlet extends HttpServlet {
         String name = req.getParameter("name");
         String sign = req.getParameter("sign");
 
-        if (isEmpty(code) || isEmpty(name) || isEmpty(sign)) {
-            sendRequiredFormFieldErrorMessage(resp);
+        if (isEmpty.test(code) || isEmpty.test(name) || isEmpty.test(sign)) {
+            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
+                    "The required form field is missing. Enter the code, name and sign");
             return;
         }
 
-        if(isCurrencyExists(code)) {
-            sendCurrencyExistErrorMessage(resp);
+//        if(code.length() != REQUIRED_LENGTH) {
+//            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
+//                    "Currency code must be " + REQUIRED_LENGTH + " characters");
+//            return;
+//        }
+
+        if (isCurrencyExists(code)) {
+            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT,
+                    "The currency you entered already exists. Please enter another one");
             return;
         }
 
@@ -50,18 +59,6 @@ public class CurrenciesServlet extends HttpServlet {
         JsonResponseUtil.sendJsonResponse(resp, addedCurrency);
     }
 
-
-    // TODO тут будет какая-то общая логика обработки ошибок, надо подумать об этом!!!
-    private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
-        String jsonResponse = "{\"message\": \"The required form field is missing. Enter the code, name and sign\"}";
-        httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        httpResponse.getWriter().write(jsonResponse);
-    }
-
-    private boolean isEmpty(String str) {
-        return str == null || str.trim().isEmpty();
-    }
-
     public boolean isCurrencyExists(String code) {
         List <CurrencyDto> currencies = currencyService.findAll();
         for (CurrencyDto currency : currencies) {
@@ -70,13 +67,6 @@ public class CurrenciesServlet extends HttpServlet {
             }
         }
         return false;
-    }
-
-
-    private void sendCurrencyExistErrorMessage(HttpServletResponse httpResponse) throws IOException {
-        String jsonResponse = "{\"message\": \"The currency you entered already exists. Please enter another one\"}";
-        httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
-        httpResponse.getWriter().write(jsonResponse);
     }
 
 }

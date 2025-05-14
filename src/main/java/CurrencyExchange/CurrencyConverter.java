@@ -73,8 +73,6 @@ public class CurrencyConverter {
         return convertedAmount;
     }
 
-
-    //TODO дублирование с методом снизу
     private ExchangeConvertDto convertToExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
         return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(
                 exchangeRate.getId(),
@@ -85,7 +83,6 @@ public class CurrencyConverter {
                 convertedAmount
         );
     }
-
 
     private ExchangeConvertDto convertToReverseExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
         return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(

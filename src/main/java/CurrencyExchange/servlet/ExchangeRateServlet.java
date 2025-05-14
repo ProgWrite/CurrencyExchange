@@ -4,6 +4,7 @@ import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
+import CurrencyExchange.util.ErrorResponseHandler;
 import CurrencyExchange.util.JsonResponseUtil;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -14,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +35,8 @@ public class ExchangeRateServlet extends HttpServlet {
         try{
             JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.getExchangeRateByCode(code));
         }catch(NotFoundException e){
-            sendExchangeRateNotExistsMessage(resp);
+            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
+                    "Exchange rate doesn't exist! Add a new exchange rate and try again");
         }
     }
 
@@ -74,7 +75,8 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         if(rate == null){
-            sendRequiredFormFieldErrorMessage(resp);
+            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
+            "The required form field is missing. Enter the rate and try again");
             return;
         }
 
@@ -84,26 +86,12 @@ public class ExchangeRateServlet extends HttpServlet {
         String targetCurrencyCode = correctPathInfo.substring(3, 6);
 
         if(!isCurrenciesExists(baseCurrencyCode, targetCurrencyCode)){
-            sendExchangeRateNotExistsMessage(resp);
+            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
+                    "Exchange rate doesn't exist! Add a new exchange rate and try again");
             return;
         }
 
         JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.update(correctPathInfo, rate));
-    }
-
-    //TODO код дублируется(
-    private void sendExchangeRateNotExistsMessage(HttpServletResponse httpResponse) throws IOException {
-        String jsonResponse = "{\"message\": \"Exchange rate doesn't exist! Add a new exchange rate and try again \"}";
-        httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        httpResponse.getWriter().write(jsonResponse);
-    }
-
-
-    // TODO дублирование c классом CurrenciesServlet
-    private void sendRequiredFormFieldErrorMessage(HttpServletResponse httpResponse) throws IOException {
-        String jsonResponse = "{\"message\": \"The required form field is missing. Enter the rate and try again\"}";
-        httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        httpResponse.getWriter().write(jsonResponse);
     }
 
     private boolean isCurrenciesExists(String baseCurrencyCode, String targetCurrencyCode) {
