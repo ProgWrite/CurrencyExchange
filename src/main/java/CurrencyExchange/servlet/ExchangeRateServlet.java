@@ -1,12 +1,11 @@
 package CurrencyExchange.servlet;
 
-import CurrencyExchange.dto.ExchangeRatesDto;
+
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import CurrencyExchange.util.ErrorResponseHandler;
 import CurrencyExchange.util.JsonResponseUtil;
-import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,12 +17,14 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
+    private final static Pattern CHECK_RATE = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
 
 
     @Override
@@ -68,6 +69,10 @@ public class ExchangeRateServlet extends HttpServlet {
         for (String param : params) {
             String[] pair = param.split("=");
             if (pair.length == 2 && "rate".equals(pair[0])) {
+                if(!isRateCorrect(pair[1], resp)){
+                    return;
+                }
+
                 String value = URLDecoder.decode(pair[1], StandardCharsets.UTF_8.name());
                 rate = new BigDecimal(value);
                 break;
@@ -100,6 +105,15 @@ public class ExchangeRateServlet extends HttpServlet {
         }
         return false;
     }
+
+    private boolean isRateCorrect(String rate, HttpServletResponse response) throws IOException {
+        if(!CHECK_RATE.matcher(rate).matches()){
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "The exchange rate must contain only numbers or floating point numbers");
+        }
+        return true;
+    }
+
 
 }
 

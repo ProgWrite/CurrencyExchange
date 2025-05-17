@@ -3,12 +3,12 @@ package CurrencyExchange.entity;
 import java.util.Objects;
 
 public class Currencies {
-    private long id;
+    private Long id;
     private String code;
     private String name;
     private String sign;
 
-    public Currencies(long id, String code, String name, String sign) {
+    public Currencies(Long id, String code, String name, String sign) {
         this.id = id;
         this.code = code;
         this.name = name;
@@ -23,7 +23,7 @@ public class Currencies {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

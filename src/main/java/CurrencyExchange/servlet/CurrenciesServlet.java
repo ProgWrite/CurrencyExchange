@@ -13,12 +13,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 @WebServlet ("/currencies")
 public class CurrenciesServlet extends HttpServlet {
-    private final static int REQUIRED_LENGTH = 3;
     private final CurrencyService currencyService = CurrencyService.getInstance();
     Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
+    private final static Pattern CHECK_CODE = Pattern.compile("^[A-Z]+$");
+    private final static Pattern CHECK_NAME = Pattern.compile("^(?! )[A-Za-z]+( [A-Za-z]+)*$");
+    private static final int REQUIRED_LENGTH_FOR_CODE = 3;
 
 
     @Override
@@ -38,11 +41,9 @@ public class CurrenciesServlet extends HttpServlet {
             return;
         }
 
-//        if(code.length() != REQUIRED_LENGTH) {
-//            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-//                    "Currency code must be " + REQUIRED_LENGTH + " characters");
-//            return;
-//        }
+        if(!isCodeCorrect(code, resp) || !isNameCorrect(name, resp)) {
+            return;
+        }
 
         if (isCurrencyExists(code)) {
             ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT,
@@ -59,7 +60,7 @@ public class CurrenciesServlet extends HttpServlet {
         JsonResponseUtil.sendJsonResponse(resp, addedCurrency);
     }
 
-    public boolean isCurrencyExists(String code) {
+    private boolean isCurrencyExists(String code) {
         List <CurrencyDto> currencies = currencyService.findAll();
         for (CurrencyDto currency : currencies) {
             if (currency.getCode().equals(code)) {
@@ -69,6 +70,30 @@ public class CurrenciesServlet extends HttpServlet {
         return false;
     }
 
+    private boolean isCodeCorrect(String code, HttpServletResponse response) throws IOException {
+        if(code != null && code.length() != REQUIRED_LENGTH_FOR_CODE) {
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "Currency code must be " + REQUIRED_LENGTH_FOR_CODE + " characters");
+            return false;
+        }
+        if(!CHECK_CODE.matcher(code).matches()) {
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "The currency code must be without spaces, in upper case and have "
+                            + REQUIRED_LENGTH_FOR_CODE + " english alphabet characters");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isNameCorrect(String name, HttpServletResponse response) throws IOException {
+        if(!CHECK_NAME.matcher(name).matches()){
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "The currency name must contain letters of the English alphabet and the " +
+                            "first character must not be a space");
+            return false;
+        }
+        return true;
+    }
 }
 
 

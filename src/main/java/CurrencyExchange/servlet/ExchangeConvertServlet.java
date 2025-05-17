@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 
 @WebServlet("/exchange/*")
@@ -26,6 +27,7 @@ public class ExchangeConvertServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
+    private final static Pattern CHECK_AMOUNT = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -48,6 +50,10 @@ public class ExchangeConvertServlet extends HttpServlet {
             return;
         }
 
+        if(!isAmountCorrect(amountParam, resp)){
+            return;
+        }
+
         BigDecimal amount = new BigDecimal(amountParam);
         JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.makeExchange(exchangeRateCode, amount));
     }
@@ -58,4 +64,15 @@ public class ExchangeConvertServlet extends HttpServlet {
         }
         return false;
     }
+
+    private boolean isAmountCorrect(String amount, HttpServletResponse response) throws IOException {
+        if(!CHECK_AMOUNT.matcher(amount).matches()){
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "Amount must contain only numbers or floating point numbers");
+            return false;
+        }
+        return true;
+    }
+
+
 }

@@ -4,12 +4,12 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ExchangeRates {
-    private long id;
+    private Long id;
     private Integer baseCurrencyId;
     private Integer targetCurrencyId;
     private BigDecimal rate;
 
-    public ExchangeRates(long id, Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
+    public ExchangeRates(Long id, Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
         this.id = id;
         this.baseCurrencyId = baseCurrencyId;
         this.targetCurrencyId = targetCurrencyId;
@@ -24,7 +24,7 @@ public class ExchangeRates {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

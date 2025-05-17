@@ -22,19 +22,15 @@ public class Filter implements jakarta.servlet.Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestURI = httpRequest.getRequestURI();
 
-        String code = httpRequest.getParameter("code");
-        if(code != null && code.length() != REQUIRED_LENGTH_FOR_CURRENCY) {
-            ErrorResponseHandler.sendErrorResponse(httpResponse, HttpServletResponse.SC_BAD_REQUEST,
-                    "Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters");
-            return;
-        }
+
+
 
         if (requestURI.startsWith("/currency")) {
             String jsonResponse = "Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters";
             if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_CURRENCY, jsonResponse)) {
                 return;
             }
-        } else if (requestURI.startsWith("/exchangeRate/")) {
+        }else if (requestURI.startsWith("/exchangeRate/")) {
             String jsonResponse = "Exchange Rate code must be " + REQUIRED_LENGTH_FOR_EXCHANGE_RATE + " characters";
             if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_EXCHANGE_RATE, jsonResponse)) {
                 return;
@@ -54,5 +50,6 @@ public class Filter implements jakarta.servlet.Filter {
         }
         return false;
     }
+
 }
 

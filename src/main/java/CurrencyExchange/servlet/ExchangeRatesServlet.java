@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -23,6 +24,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
+    private final static Pattern CHECK_RATE = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
 
 
     @Override
@@ -51,6 +53,10 @@ public class ExchangeRatesServlet extends HttpServlet {
         if(isExchangeRateExists(baseCurrencyCode, targetCurrencyCode)){
             ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_CONFLICT,
                     "The exchange rate you entered already exists. Please enter another one");
+            return;
+        }
+
+        if(!isRateCorrect(rateString, resp)){
             return;
         }
 
@@ -92,4 +98,11 @@ public class ExchangeRatesServlet extends HttpServlet {
         return false;
     }
 
+    private boolean isRateCorrect(String rate, HttpServletResponse response) throws IOException {
+        if(!CHECK_RATE.matcher(rate).matches()){
+            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "The exchange rate must contain only numbers or floating point numbers");
+        }
+        return true;
+    }
 }
