@@ -113,8 +113,6 @@ public class ExchangeRateServlet extends HttpServlet {
         }
         return true;
     }
-
-
 }
 
 

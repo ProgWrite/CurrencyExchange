@@ -4,7 +4,6 @@ import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.entity.Currencies;
-import CurrencyExchange.entity.ExchangeRates;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -44,6 +43,5 @@ public interface UserMapper {
             BigDecimal convertedAnount) {
         return new ExchangeConvertDto(0L, baseCurrency, targetCurrency, rate, amount, convertedAnount);
     }
-
 
 }

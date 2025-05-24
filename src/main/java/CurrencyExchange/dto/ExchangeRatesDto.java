@@ -16,7 +16,7 @@ public class ExchangeRatesDto {
         this.rate = rate;
     }
 
-    public ExchangeRatesDto(CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate){
+    public ExchangeRatesDto(CurrencyDto baseCurrency, CurrencyDto targetCurrency, BigDecimal rate) {
         this(0L, baseCurrency, targetCurrency, rate);
     }
 

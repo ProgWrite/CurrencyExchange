@@ -1,11 +1,9 @@
 package CurrencyExchange.servlet;
 
-import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import CurrencyExchange.util.ErrorResponseHandler;
 import CurrencyExchange.util.JsonResponseUtil;
-import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,9 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -31,7 +27,6 @@ public class ExchangeConvertServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         String from = req.getParameter("from");
         String to = req.getParameter("to");
         String amountParam = req.getParameter("amount");

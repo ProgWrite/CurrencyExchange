@@ -26,7 +26,6 @@ public class ExchangeConvertDto {
     }
 
 
-
     public long getId() {
         return id;
     }

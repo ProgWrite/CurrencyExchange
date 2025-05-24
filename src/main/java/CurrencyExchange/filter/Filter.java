@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-//TODO у dmdev было как записать сюда несколько значений
 @WebFilter("/*")
 public class Filter implements jakarta.servlet.Filter {
 
@@ -22,21 +21,17 @@ public class Filter implements jakarta.servlet.Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestURI = httpRequest.getRequestURI();
 
-
-
-
         if (requestURI.startsWith("/currency")) {
             String jsonResponse = "Currency code must be " + REQUIRED_LENGTH_FOR_CURRENCY + " characters";
             if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_CURRENCY, jsonResponse)) {
                 return;
             }
-        }else if (requestURI.startsWith("/exchangeRate/")) {
+        } else if (requestURI.startsWith("/exchangeRate/")) {
             String jsonResponse = "Exchange Rate code must be " + REQUIRED_LENGTH_FOR_EXCHANGE_RATE + " characters";
             if (isStringLengthValid(httpRequest, httpResponse, REQUIRED_LENGTH_FOR_EXCHANGE_RATE, jsonResponse)) {
                 return;
             }
         }
-
         filterChain.doFilter(request, response);
     }
 

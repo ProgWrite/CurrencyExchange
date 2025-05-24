@@ -1,6 +1,5 @@
 package CurrencyExchange.dao;
 
-import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.DataBaseException;
 import CurrencyExchange.util.SQLConnectionManager;
@@ -10,7 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 public class ExchangeRatesDao implements Dao<ExchangeRates> {
@@ -18,8 +19,8 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
     private final static ExchangeRatesDao INSTANCE = new ExchangeRatesDao();
 
     private final static String FIND_ALL = """
-    SELECT * FROM ExchangeRates
-    """;
+            SELECT * FROM ExchangeRates
+            """;
 
     private final static String FIND_BY_CODE = """
             SELECT er.id, er.BaseCurrencyId, er.TargetCurrencyId, er.Rate
@@ -63,7 +64,7 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
         }
     }
 
-    public  Optional<ExchangeRates> findByCode(String code) {
+    public Optional<ExchangeRates> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
             String baseCurrency = code.substring(0, 3);
@@ -72,9 +73,9 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
             statement.setString(2, targetCurrency);
             ResultSet resultSet = statement.executeQuery();
 
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return Optional.of(buildExchangeRates(resultSet));
-            }else{
+            } else {
                 return Optional.empty();
             }
         } catch (SQLException e) {

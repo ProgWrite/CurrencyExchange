@@ -1,11 +1,9 @@
 package CurrencyExchange.servlet;
 
-import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.util.ErrorResponseHandler;
 import CurrencyExchange.util.JsonResponseUtil;
-import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

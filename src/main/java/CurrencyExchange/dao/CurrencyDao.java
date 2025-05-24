@@ -2,7 +2,6 @@ package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.exceptions.DataBaseException;
-import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.util.SQLConnectionManager;
 
 import java.sql.Connection;
@@ -11,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class CurrencyDao implements Dao<Currencies> {
@@ -19,20 +17,18 @@ public class CurrencyDao implements Dao<Currencies> {
     private final static CurrencyDao INSTANCE = new CurrencyDao();
 
     private final static String FIND_ALL = """
-    SELECT * FROM Currencies;
-    """;
+            SELECT * FROM Currencies;
+            """;
 
     private final static String FIND_BY_CODE = """
-    SELECT * FROM Currencies
-    WHERE code = ?
-    """;
+            SELECT * FROM Currencies
+            WHERE code = ?
+            """;
 
     private final static String FIND_BY_ID = """
-    SELECT * FROM Currencies
-    WHERE id = ?
-    """;
-
-
+            SELECT * FROM Currencies
+            WHERE id = ?
+            """;
 
     private final static String SAVE_CURRENCY = """
             INSERT INTO Currencies(code, name, sign)
@@ -54,11 +50,11 @@ public class CurrencyDao implements Dao<Currencies> {
         List<Currencies> currencies = new ArrayList<>();
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_ALL);
-                 ResultSet resultSet = statement.executeQuery();
-                while (resultSet.next()) {
-                    currencies.add(buildCurrency(resultSet));
-                }
-                return currencies;
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                currencies.add(buildCurrency(resultSet));
+            }
+            return currencies;
         } catch (SQLException e) {
             throw new DataBaseException("Failed to find currencies");
         }
@@ -81,7 +77,7 @@ public class CurrencyDao implements Dao<Currencies> {
         }
     }
 
-    public   Optional<Currencies> findById(Long id) {
+    public Optional<Currencies> findById(Long id) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_ID);
             statement.setLong(1, id);

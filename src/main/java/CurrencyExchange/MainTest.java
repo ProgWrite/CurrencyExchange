@@ -10,8 +10,7 @@ public class MainTest {
         System.out.println(check("RUB"));
     }
 
-
-    public static boolean check(String s){
+    public static boolean check(String s) {
         return PATTERN.matcher(s).matches();
     }
 }
