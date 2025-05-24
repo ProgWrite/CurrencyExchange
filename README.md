@@ -8,5 +8,6 @@ You can use this application by following the [link](http://5.183.189.4:8080/)
 
 1. Go to the configurations menu
 2. Select "Edit configurations"
-3. ![Click the plus sign and select Tomcat -> Local](https://github.com/ProgWrite/CurrencyExchange/blob/master/1.png)
+3. Click the plus sign and select Tomcat -> Local
+ ![](https://github.com/ProgWrite/CurrencyExchange/blob/master/1.png)
 
