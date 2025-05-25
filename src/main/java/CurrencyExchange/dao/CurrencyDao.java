@@ -60,7 +60,7 @@ public class CurrencyDao implements Dao<Currencies> {
         }
     }
 
-
+    //TODO лучше использовать такую структуру с исключениями (Optional.empty()) внизу, а не как у меня. Исправь это везде
     public Optional<Currencies> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
@@ -69,12 +69,11 @@ public class CurrencyDao implements Dao<Currencies> {
 
             if (resultSet.next()) {
                 return Optional.of(buildCurrency(resultSet));
-            } else {
-                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataBaseException("Failed to find currency with code " + code);
         }
+        return Optional.empty();
     }
 
     public Optional<Currencies> findById(Long id) {
