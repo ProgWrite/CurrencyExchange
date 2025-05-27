@@ -110,10 +110,10 @@ public class CurrencyDao implements Dao<Currencies> {
 
     private Currencies buildCurrency(ResultSet resultSet) throws SQLException {
         return new Currencies(
-                resultSet.getObject("id", Long.class),
-                resultSet.getObject("code", String.class),
-                resultSet.getObject("name", String.class),
-                resultSet.getObject("sign", String.class)
+                resultSet.getLong("id"),
+                resultSet.getString("code"),
+                resultSet.getString("name"),
+                resultSet.getString("sign")
         );
     }
 

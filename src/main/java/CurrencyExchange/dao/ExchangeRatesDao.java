@@ -3,8 +3,6 @@ package CurrencyExchange.dao;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.DataBaseException;
 import CurrencyExchange.util.SQLConnectionManager;
-
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -113,11 +111,10 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
 
     private ExchangeRates buildExchangeRates(ResultSet resultSet) throws SQLException {
         return new ExchangeRates(
-                resultSet.getObject("id", Long.class),
-                resultSet.getObject("BaseCurrencyId", Integer.class),
-                resultSet.getObject("TargetCurrencyId", Integer.class),
-                resultSet.getObject("Rate", BigDecimal.class)
+                resultSet.getLong("id"),
+                resultSet.getInt("BaseCurrencyId"),
+                resultSet.getInt("TargetCurrencyId"),
+                resultSet.getBigDecimal("Rate")
         );
     }
-
 }
