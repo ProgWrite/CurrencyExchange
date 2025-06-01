@@ -3,13 +3,16 @@ package CurrencyExchange.dao;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.DataBaseException;
+import CurrencyExchange.exceptions.EntityExistsException;
 import CurrencyExchange.utils.SQLConnectionManager;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,18 +112,24 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
     }
 
 
-    public void update(ExchangeRates exchangeRates) {
+    public Optional<ExchangeRates> update(ExchangeRates exchangeRates) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(UPDATE);
             statement.setBigDecimal(1, exchangeRates.getRate());
             statement.setLong(2, exchangeRates.getId());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataBaseException("Failed to update exchange rate with id " + exchangeRates.getId());
+
+            int updateCount = statement.executeUpdate();
+
+            if (updateCount > 0) {
+                return Optional.of(exchangeRates);
+            }
+            return Optional.empty();
+        }
+        catch (SQLException e) {
+            throw new DataBaseException("Failed to update exchange rate with id '" + exchangeRates.getId() + "' in the database");
         }
     }
 
-    //TODO проработай эту ошибку
     @Override
     public ExchangeRates create(ExchangeRates exchangeRates) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
@@ -134,7 +143,18 @@ public class ExchangeRatesDao implements Dao<ExchangeRates> {
             ResultSet resultSet = statement.getGeneratedKeys();
             exchangeRates.setId(resultSet.getLong(1));
             return exchangeRates;
+
+
         } catch (SQLException e) {
+            if (e instanceof SQLiteException) {
+                SQLiteException exception = (SQLiteException) e;
+                if (exception.getResultCode().code == SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE.code) {
+                    throw new EntityExistsException(
+                            String.format("Exchange rate '%s' to '%s' already exists",
+                                    exchangeRates.getBaseCurrency().getCode(), exchangeRates.getTargetCurrency().getCode())
+                    );
+                }
+            }
             throw new DataBaseException(
                     String.format("Failed to save exchange rate '%s' to '%s' to the database",
                             exchangeRates.getBaseCurrency().getCode(), exchangeRates.getTargetCurrency().getCode())

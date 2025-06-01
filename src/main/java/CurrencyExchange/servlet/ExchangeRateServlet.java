@@ -3,10 +3,10 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.InvalidParameterException;
-import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import CurrencyExchange.utils.ErrorResponseHandler;
+import CurrencyExchange.utils.ValidationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,29 +16,28 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.regex.Pattern;
 
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
-    private final static Pattern CHECK_RATE = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         String pathInfo = req.getPathInfo();
-        String code = pathInfo.substring(1);
+        String exchangeRatecode = pathInfo.substring(1);
+        ValidationUtils.checkLength(exchangeRatecode);
 
-        try{
-            ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
-            objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
-        }catch(NotFoundException e){
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    "Exchange rate doesn't exist! Add a new exchange rate and try again");
-        }
+        String baseCurrencyCode = exchangeRatecode.substring(0, 3);
+        String targetCurrencyCode = exchangeRatecode.substring(3);
+        ValidationUtils.validateCurrencyCode(baseCurrencyCode);
+        ValidationUtils.validateCurrencyCode(targetCurrencyCode);
+
+        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(exchangeRatecode);
+        objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
+
     }
 
     @Override
@@ -53,50 +52,46 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
 
-    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-       String parametr = req.getReader().readLine();
-       String rate = parametr.replace("rate=", "");
-       BigDecimal rateBigDecimal = convertToNumber(rate);
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String currencyCodes = req.getPathInfo().replaceFirst("/", "");
+        ValidationUtils.checkLength(currencyCodes);
 
-        if(rateBigDecimal == null){
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-            "The required form field is missing. Enter the rate and try again");
-            return;
+        String baseCurrencyCode = currencyCodes.substring(0, 3);
+        String targetCurrencyCode = currencyCodes.substring(3, 6);
+
+        ValidationUtils.validateCurrencyCode(baseCurrencyCode);
+        ValidationUtils.validateCurrencyCode(targetCurrencyCode);
+
+
+
+        String parameter = req.getReader().readLine();
+
+        if (parameter == null || !parameter.contains("rate")) {
+            throw new InvalidParameterException("Missing parameter - rate");
         }
+
+        String rate = parameter.replace("rate=", "");
+
+        if (rate.isBlank()) {
+            throw new InvalidParameterException("Missing parameter - rate");
+        }
+
+        BigDecimal rateBigDecimal = convertToNumber(rate);
 
         String pathInfo = req.getPathInfo();
         String correctPathInfo = pathInfo.substring(1);
-        String baseCurrencyCode = correctPathInfo.substring(0, 3);
-        String targetCurrencyCode = correctPathInfo.substring(3, 6);
-
-        if(!isCurrenciesExists(baseCurrencyCode, targetCurrencyCode)){
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    "Exchange rate doesn't exist! Add a new exchange rate and try again");
-            return;
-        }
         ExchangeRatesDto exchangeRatesDto = exchangeRatesService.update(correctPathInfo, rateBigDecimal);
         objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
     }
 
 
-    private boolean isCurrenciesExists(String baseCurrencyCode, String targetCurrencyCode) {
-        if (currencyService.getCurrencyByCode(baseCurrencyCode) != null && currencyService.getCurrencyByCode(targetCurrencyCode) != null) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isRateCorrect(String rate, HttpServletResponse response) throws IOException {
-        if(!CHECK_RATE.matcher(rate).matches()){
-            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "The exchange rate must contain only numbers or floating point numbers");
-        }
-        return true;
-    }
-
     private static BigDecimal convertToNumber(String rate) {
         try {
-            return BigDecimal.valueOf(Double.parseDouble(rate));
+            BigDecimal rateBigDecimal = BigDecimal.valueOf(Double.parseDouble(rate));
+            if (rateBigDecimal.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new InvalidParameterException("Invalid parameter - rate must be non-negative");
+            }
+            return rateBigDecimal;
         }
         catch (NumberFormatException e) {
             throw new InvalidParameterException("Parameter rate must be a number");

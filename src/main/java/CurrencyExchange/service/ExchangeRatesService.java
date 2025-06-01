@@ -6,7 +6,6 @@ import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.NotFoundException;
-import CurrencyExchange.exceptions.ServiceException;
 import CurrencyExchange.utils.MappingUtils;
 
 import java.math.BigDecimal;
@@ -43,19 +42,16 @@ public class ExchangeRatesService {
 
     public ExchangeRatesDto create(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         Currencies baseCurrency = currencyDao.findByCode(baseCurrencyCode)
-        .orElseThrow(() -> new NotFoundException("No currency found with code " + baseCurrencyCode));
+                .orElseThrow(() -> new NotFoundException("No currency found with code " + baseCurrencyCode));
         Currencies targetCurrency = currencyDao.findByCode(targetCurrencyCode)
-                .orElseThrow(()-> new NotFoundException("No currency found with code " + targetCurrencyCode));
+                .orElseThrow(() -> new NotFoundException("No currency found with code " + targetCurrencyCode));
+
         ExchangeRates exchangeRate = new ExchangeRates(baseCurrency, targetCurrency, rate);
+        ExchangeRates newExchangeRate = exchangeRatesDao.create(exchangeRate);
 
-
-        try {
-            ExchangeRates newExchangeRate =   exchangeRatesDao.create(exchangeRate);
-            return MappingUtils.convertToDto(newExchangeRate);
-        } catch (RuntimeException e) {
-            throw new ServiceException("Exchange rate creation failed.");
-        }
+        return MappingUtils.convertToDto(newExchangeRate);
     }
+
 
     public ExchangeRatesDto update(String pathInfo, BigDecimal rate) {
         ExchangeRates updatedExchangeRate = exchangeRatesDao.findByCode(pathInfo)

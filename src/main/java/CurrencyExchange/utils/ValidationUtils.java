@@ -1,20 +1,19 @@
 package CurrencyExchange.utils;
 
 import CurrencyExchange.dto.CurrencyDto;
-import CurrencyExchange.exceptions.EntityExistsException;
+import CurrencyExchange.dto.ExchangeRateRequestDto;
+import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.InvalidParameterException;
-import CurrencyExchange.service.CurrencyService;
 
+import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ValidationUtils {
-    private final static int REQUIRED_LENGTH = 3;
+    private final static int REQUIRED_LENGTH_FOR_CODE = 3;
+    private final static int REQUIRED_LENGTH_FOR_EXCHANGE_RATE = 6;
     private static Set<String> currencyCodes;
-    private final static CurrencyService currencyService = CurrencyService.getInstance();
-
 
     public static void validate(CurrencyDto currencyDto) {
         String code = currencyDto.getCode();
@@ -34,9 +33,37 @@ public class ValidationUtils {
         validateCurrencyCode(code);
     }
 
+    public static void validate(ExchangeRateRequestDto exchangeRateRequestDto) {
+        String baseCurrencyCode = exchangeRateRequestDto.getBaseCurrencyCode();
+        String targetCurrencyCode = exchangeRateRequestDto.getTargetCurrencyCode();
+        BigDecimal rate = exchangeRateRequestDto.getRate();
+
+        if (baseCurrencyCode == null || baseCurrencyCode.isBlank()) {
+            throw new InvalidParameterException("Missing parameter - baseCurrencyCode");
+        }
+
+        if (targetCurrencyCode == null || targetCurrencyCode.isBlank()) {
+            throw new InvalidParameterException("Missing parameter - targetCurrencyCode");
+        }
+
+        if (rate == null) {
+            throw new InvalidParameterException("Missing parameter - rate");
+        }
+
+        if (rate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidParameterException("Invalid parameter - rate must be non-negative");
+        }
+        validateCurrencyCode(baseCurrencyCode);
+        validateCurrencyCode(targetCurrencyCode);
+    }
+
+
+
+
+
 
     public static void validateCurrencyCode(String code) {
-        if(code.length() != REQUIRED_LENGTH) {
+        if(code.length() != REQUIRED_LENGTH_FOR_CODE) {
             throw new InvalidParameterException("Invalid currency code");
         }
 
@@ -51,6 +78,12 @@ public class ValidationUtils {
             throw new InvalidParameterException("Currency code must be in ISO 4217 format");
         }
 
+    }
+
+    public static void checkLength(String exchangeRateCode){
+        if(exchangeRateCode.length() != REQUIRED_LENGTH_FOR_EXCHANGE_RATE) {
+            throw new InvalidParameterException("The exchange rate must contain 6 characters and be in the correct format.");
+        }
     }
 
 }

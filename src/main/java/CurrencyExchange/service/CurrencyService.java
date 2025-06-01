@@ -4,9 +4,7 @@ import CurrencyExchange.dao.CurrencyDao;
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.exceptions.NotFoundException;
-import CurrencyExchange.exceptions.ServiceException;
 import CurrencyExchange.utils.MappingUtils;
-
 
 import java.util.List;
 import java.util.stream.Collectors;

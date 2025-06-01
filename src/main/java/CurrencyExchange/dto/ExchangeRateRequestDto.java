@@ -9,10 +9,11 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExchangeRatesDto {
-    private long id;
-    private CurrencyDto baseCurrency;
-    private CurrencyDto targetCurrency;
-    private BigDecimal rate;
+public class ExchangeRateRequestDto {
 
+    private String baseCurrencyCode;
+
+    private String targetCurrencyCode;
+
+    private BigDecimal rate;
 }
