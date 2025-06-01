@@ -1,6 +1,6 @@
 package CurrencyExchange.filter;
 
-import CurrencyExchange.util.ErrorResponseHandler;
+import CurrencyExchange.utils.ErrorResponseHandler;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,9 +1,10 @@
 package CurrencyExchange.servlet;
 
+import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.service.CurrencyService;
-import CurrencyExchange.service.ExchangeRatesService;
-import CurrencyExchange.util.ErrorResponseHandler;
-import CurrencyExchange.util.JsonResponseUtil;
+import CurrencyExchange.service.ExchangeService;
+import CurrencyExchange.utils.ErrorResponseHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,10 +21,11 @@ import java.util.regex.Pattern;
 
 public class ExchangeConvertServlet extends HttpServlet {
 
-    private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
+    private final ExchangeService exchangeService = ExchangeService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
     private final static Pattern CHECK_AMOUNT = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -50,7 +52,8 @@ public class ExchangeConvertServlet extends HttpServlet {
         }
 
         BigDecimal amount = new BigDecimal(amountParam);
-        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.makeExchange(exchangeRateCode, amount));
+        ExchangeConvertDto exchangeConvertDto = exchangeService.makeExchange(exchangeRateCode, amount);
+        objectMapper.writeValue(resp.getWriter(), exchangeConvertDto);
     }
 
     private boolean isCurrenciesExist(String baseCurrencyCode, String targetCurrencyCode) {

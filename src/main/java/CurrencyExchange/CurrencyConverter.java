@@ -1,11 +1,13 @@
 package CurrencyExchange;
 
 import CurrencyExchange.dao.ExchangeRatesDao;
+import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeConvertDto;
+import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.NotFoundException;
-import CurrencyExchange.mapper.UserMapper;
 import CurrencyExchange.service.CurrencyService;
+import CurrencyExchange.utils.MappingUtils;
 
 
 import java.math.BigDecimal;
@@ -72,40 +74,54 @@ public class CurrencyConverter {
     }
 
     private ExchangeConvertDto convertToDirectExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
-        return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(
-                exchangeRate.getId(),
-                currencyService.getCurrencyById(exchangeRate.getBaseCurrencyId()),
-                currencyService.getCurrencyById(exchangeRate.getTargetCurrencyId()),
-                rate,
-                amount,
-                convertedAmount
-        );
+        Currencies baseCurrency =  exchangeRate.getBaseCurrency();
+        CurrencyDto baseCurrencyDto = MappingUtils.convertToDto(baseCurrency);
+        Currencies targetCurrency = exchangeRate.getTargetCurrency();
+        CurrencyDto targetCurrencyDto = MappingUtils.convertToDto(targetCurrency);
+
+        ExchangeConvertDto exchangeConvertDto = new ExchangeConvertDto();
+        exchangeConvertDto.setId(exchangeRate.getId());
+        exchangeConvertDto.setBaseCurrencyId(baseCurrencyDto);
+        exchangeConvertDto.setTargetCurrencyId(targetCurrencyDto);
+        exchangeConvertDto.setRate(rate);
+        exchangeConvertDto.setAmount(amount);
+        exchangeConvertDto.setConvertedAmount(convertedAmount);
+        return exchangeConvertDto;
     }
 
     private ExchangeConvertDto convertToReverseExchangeDtoWithId(ExchangeRates exchangeRate, BigDecimal amount, BigDecimal convertedAmount, BigDecimal rate) {
-        return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithId(
-                exchangeRate.getId(),
-                currencyService.getCurrencyById(exchangeRate.getTargetCurrencyId()),
-                currencyService.getCurrencyById(exchangeRate.getBaseCurrencyId()),
-                rate,
-                amount,
-                convertedAmount
-        );
+        Currencies baseCurrency =  exchangeRate.getBaseCurrency();
+        CurrencyDto baseCurrencyDto = MappingUtils.convertToDto(baseCurrency);
+        Currencies targetCurrency = exchangeRate.getTargetCurrency();
+        CurrencyDto targetCurrencyDto = MappingUtils.convertToDto(targetCurrency);
+
+        ExchangeConvertDto exchangeConvertDto = new ExchangeConvertDto();
+        exchangeConvertDto.setId(exchangeRate.getId());
+        exchangeConvertDto.setBaseCurrencyId(targetCurrencyDto);
+        exchangeConvertDto.setTargetCurrencyId(baseCurrencyDto);
+        exchangeConvertDto.setRate(rate);
+        exchangeConvertDto.setAmount(amount);
+        exchangeConvertDto.setConvertedAmount(convertedAmount);
+        return exchangeConvertDto;
     }
 
 
-    private ExchangeConvertDto convertToCrossExchangeDtoWithoutId(ExchangeRates checkBaseCode, ExchangeRates checkTargetCode, BigDecimal amount, BigDecimal convertedAmount) {
-        BigDecimal baseRate = checkBaseCode.getRate();
-        BigDecimal targetRate = checkTargetCode.getRate();
-        BigDecimal crossRate = targetRate.divide(baseRate, 6, BigDecimal.ROUND_HALF_UP);
+    private ExchangeConvertDto convertToCrossExchangeDtoWithoutId(ExchangeRates baseExchangeRate, ExchangeRates targetExchangeRate, BigDecimal amount, BigDecimal convertedAmount) {
+        Currencies baseCurrency =  baseExchangeRate.getTargetCurrency();
+        CurrencyDto baseCurrencyDto = MappingUtils.convertToDto(baseCurrency);
+        Currencies targetCurrency = targetExchangeRate.getTargetCurrency();
+        CurrencyDto targetCurrencyDto = MappingUtils.convertToDto(targetCurrency);
 
-        return UserMapper.INSTANCE.exchangeRateToExchangeConvertDtoWithoutId(
-                currencyService.getCurrencyById(checkBaseCode.getTargetCurrencyId()),
-                currencyService.getCurrencyById(checkTargetCode.getTargetCurrencyId()),
-                crossRate,
-                amount,
-                convertedAmount
-        );
+        BigDecimal baseRate = baseExchangeRate.getRate();
+        BigDecimal targetRate = targetExchangeRate.getRate();
+        BigDecimal crossRate = targetRate.divide(baseRate, 2, BigDecimal.ROUND_HALF_UP);
+
+        ExchangeConvertDto exchangeConvertDto = new ExchangeConvertDto();
+        exchangeConvertDto.setBaseCurrencyId(baseCurrencyDto);
+        exchangeConvertDto.setTargetCurrencyId(targetCurrencyDto);
+        exchangeConvertDto.setRate(crossRate);
+        exchangeConvertDto.setAmount(amount);
+        exchangeConvertDto.setConvertedAmount(convertedAmount);
+        return exchangeConvertDto;
     }
-
 }

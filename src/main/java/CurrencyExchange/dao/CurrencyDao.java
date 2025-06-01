@@ -2,7 +2,7 @@ package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.exceptions.DataBaseException;
-import CurrencyExchange.util.SQLConnectionManager;
+import CurrencyExchange.utils.SQLConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,7 +60,6 @@ public class CurrencyDao implements Dao<Currencies> {
         }
     }
 
-    //TODO лучше использовать такую структуру с исключениями (Optional.empty()) внизу, а не как у меня. Исправь это везде
     public Optional<Currencies> findByCode(String code) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE);
@@ -84,12 +83,11 @@ public class CurrencyDao implements Dao<Currencies> {
 
             if (resultSet.next()) {
                 return Optional.of((buildCurrency(resultSet)));
-            } else {
-                return Optional.empty();
             }
         } catch (SQLException e) {
             throw new DataBaseException("Failed to find currency with id " + id);
         }
+        return Optional.empty();
     }
 
     @Override
@@ -116,5 +114,4 @@ public class CurrencyDao implements Dao<Currencies> {
                 resultSet.getString("sign")
         );
     }
-
 }

@@ -2,32 +2,37 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
-import CurrencyExchange.util.ErrorResponseHandler;
-import CurrencyExchange.util.JsonResponseUtil;
+import CurrencyExchange.utils.ErrorResponseHandler;
+import CurrencyExchange.utils.JsonResponseUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebServlet ("/currencies")
 public class CurrenciesServlet extends HttpServlet {
     private final CurrencyService currencyService = CurrencyService.getInstance();
-    Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
+    private final Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
     private final static Pattern CHECK_CODE = Pattern.compile("^[A-Z]+$");
     private final static Pattern CHECK_NAME = Pattern.compile("^(?! )[A-Za-z]+( [A-Za-z]+)*$");
     private static final int REQUIRED_LENGTH_FOR_CODE = 3;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-          JsonResponseUtil.sendJsonResponse(resp, currencyService.findAll());
+          List<CurrencyDto> currenciesDto = currencyService.findAll();
+          objectMapper.writeValue(resp.getWriter(), currenciesDto);
     }
+
+
+    // TODO валидация исчезнет и методы снизу тоже уберутся!!!!!
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -58,8 +63,10 @@ public class CurrenciesServlet extends HttpServlet {
         if (addedCurrency != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);
         }
-        JsonResponseUtil.sendJsonResponse(resp, addedCurrency);
+        objectMapper.writeValue(resp.getWriter(), addedCurrency);
     }
+
+
 
     private boolean isCurrencyExists(String code) {
         List <CurrencyDto> currencies = currencyService.findAll();

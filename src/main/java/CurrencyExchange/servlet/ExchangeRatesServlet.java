@@ -4,8 +4,9 @@ import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
-import CurrencyExchange.util.ErrorResponseHandler;
-import CurrencyExchange.util.JsonResponseUtil;
+import CurrencyExchange.utils.ErrorResponseHandler;
+import CurrencyExchange.utils.JsonResponseUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -25,12 +27,14 @@ public class ExchangeRatesServlet extends HttpServlet {
     private final CurrencyService currencyService = CurrencyService.getInstance();
     Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
     private final static Pattern CHECK_RATE = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.findAll());
+        List<ExchangeRatesDto> exchangeRatesDto = exchangeRatesService.findAll();
+        objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
     }
+
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -67,8 +71,7 @@ public class ExchangeRatesServlet extends HttpServlet {
         if (exchangeRatesDto != null) {
             resp.setStatus(HttpServletResponse.SC_CREATED);
         }
-        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesDto);
-
+        objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
     }
 
     private boolean isExchangeRateExists(String baseCurrencyCode, String targetCurrencyCode) {

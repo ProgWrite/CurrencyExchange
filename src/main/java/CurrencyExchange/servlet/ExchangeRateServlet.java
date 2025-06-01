@@ -1,11 +1,15 @@
 package CurrencyExchange.servlet;
 
 
+import CurrencyExchange.dto.ExchangeRatesDto;
+import CurrencyExchange.entity.ExchangeRates;
+import CurrencyExchange.exceptions.InvalidParameterException;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
-import CurrencyExchange.util.ErrorResponseHandler;
-import CurrencyExchange.util.JsonResponseUtil;
+import CurrencyExchange.utils.ErrorResponseHandler;
+import CurrencyExchange.utils.JsonResponseUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,7 +29,7 @@ public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     private final static Pattern CHECK_RATE = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,7 +38,8 @@ public class ExchangeRateServlet extends HttpServlet {
         String code = pathInfo.substring(1);
 
         try{
-            JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.getExchangeRateByCode(code));
+            ExchangeRatesDto exchangeRatesDto = exchangeRatesService.getExchangeRateByCode(code);
+            objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
         }catch(NotFoundException e){
             ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
                     "Exchange rate doesn't exist! Add a new exchange rate and try again");
@@ -54,32 +59,11 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-        StringBuilder sb = new StringBuilder();
-        String line;
-        try (BufferedReader reader = req.getReader()) {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-        }
+       String parametr = req.getReader().readLine();
+       String rate = parametr.replace("rate=", "");
+       BigDecimal rateBigDecimal = convertToNumber(rate);
 
-        String requestBody = sb.toString();
-        String[] params = requestBody.split("&");
-        BigDecimal rate = null;
-
-        for (String param : params) {
-            String[] pair = param.split("=");
-            if (pair.length == 2 && "rate".equals(pair[0])) {
-                if(!isRateCorrect(pair[1], resp)){
-                    return;
-                }
-
-                String value = URLDecoder.decode(pair[1], StandardCharsets.UTF_8.name());
-                rate = new BigDecimal(value);
-                break;
-            }
-        }
-
-        if(rate == null){
+        if(rateBigDecimal == null){
             ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
             "The required form field is missing. Enter the rate and try again");
             return;
@@ -95,9 +79,10 @@ public class ExchangeRateServlet extends HttpServlet {
                     "Exchange rate doesn't exist! Add a new exchange rate and try again");
             return;
         }
-
-        JsonResponseUtil.sendJsonResponse(resp, exchangeRatesService.update(correctPathInfo, rate));
+        ExchangeRatesDto exchangeRatesDto = exchangeRatesService.update(correctPathInfo, rateBigDecimal);
+        objectMapper.writeValue(resp.getWriter(), exchangeRatesDto);
     }
+
 
     private boolean isCurrenciesExists(String baseCurrencyCode, String targetCurrencyCode) {
         if (currencyService.getCurrencyByCode(baseCurrencyCode) != null && currencyService.getCurrencyByCode(targetCurrencyCode) != null) {
@@ -112,6 +97,15 @@ public class ExchangeRateServlet extends HttpServlet {
                     "The exchange rate must contain only numbers or floating point numbers");
         }
         return true;
+    }
+
+    private static BigDecimal convertToNumber(String rate) {
+        try {
+            return BigDecimal.valueOf(Double.parseDouble(rate));
+        }
+        catch (NumberFormatException e) {
+            throw new InvalidParameterException("Parameter rate must be a number");
+        }
     }
 }
 
