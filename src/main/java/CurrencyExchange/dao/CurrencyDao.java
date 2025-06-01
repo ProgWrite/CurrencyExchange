@@ -2,7 +2,10 @@ package CurrencyExchange.dao;
 
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.exceptions.DataBaseException;
+import CurrencyExchange.exceptions.EntityExistsException;
 import CurrencyExchange.utils.SQLConnectionManager;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,11 +26,6 @@ public class CurrencyDao implements Dao<Currencies> {
     private final static String FIND_BY_CODE = """
             SELECT * FROM Currencies
             WHERE code = ?
-            """;
-
-    private final static String FIND_BY_ID = """
-            SELECT * FROM Currencies
-            WHERE id = ?
             """;
 
     private final static String SAVE_CURRENCY = """
@@ -75,34 +73,29 @@ public class CurrencyDao implements Dao<Currencies> {
         return Optional.empty();
     }
 
-    public Optional<Currencies> findById(Long id) {
-        try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(FIND_BY_ID);
-            statement.setLong(1, id);
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                return Optional.of((buildCurrency(resultSet)));
-            }
-        } catch (SQLException e) {
-            throw new DataBaseException("Failed to find currency with id " + id);
-        }
-        return Optional.empty();
-    }
 
     @Override
     public Currencies create(Currencies currency) {
         try (Connection connection = SQLConnectionManager.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(SAVE_CURRENCY);
+
             statement.setString(1, currency.getCode());
             statement.setString(2, currency.getName());
             statement.setString(3, currency.getSign());
+
             statement.execute();
             ResultSet resultSet = statement.getGeneratedKeys();
             currency.setId(resultSet.getLong(1));
             return currency;
-        } catch (SQLException e) {
-            throw new DataBaseException("Failed to create currency");
+        }
+        catch (SQLException e) {
+            if (e instanceof SQLiteException) {
+                SQLiteException exception = (SQLiteException) e;
+                if (exception.getResultCode().code == SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE.code) {
+                    throw new EntityExistsException("Currency with code '" + currency.getCode() + "' already exists");
+                }
+            }
+            throw new DataBaseException("Failed to save currency with code '" + currency.getCode() + "' to the database");
         }
     }
 

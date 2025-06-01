@@ -2,13 +2,11 @@ package CurrencyExchange.servlet;
 
 
 import CurrencyExchange.dto.ExchangeRatesDto;
-import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.InvalidParameterException;
 import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
 import CurrencyExchange.utils.ErrorResponseHandler;
-import CurrencyExchange.utils.JsonResponseUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,11 +14,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 

@@ -1,10 +1,8 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
-import CurrencyExchange.exceptions.NotFoundException;
 import CurrencyExchange.service.CurrencyService;
-import CurrencyExchange.utils.ErrorResponseHandler;
-import CurrencyExchange.utils.JsonResponseUtil;
+import CurrencyExchange.utils.ValidationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,15 +20,11 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String code  = req.getPathInfo().substring(1);
+        String code = req.getPathInfo().substring(1);
+        ValidationUtils.validateCurrencyCode(code);
+        CurrencyDto currencyDto = currencyService.getCurrencyByCode(code);
+        objectMapper.writeValue(resp.getWriter(), currencyDto);
 
-        try{
-            CurrencyDto currencyDto = currencyService.getCurrencyByCode(code);
-            objectMapper.writeValue(resp.getWriter(), currencyDto);
-        }catch(NotFoundException e){
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    "Currency doesn't exist! Add a new currency and try again");
-        }
     }
 
 }

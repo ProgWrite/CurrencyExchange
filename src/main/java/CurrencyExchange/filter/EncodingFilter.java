@@ -1,10 +1,9 @@
 package CurrencyExchange.filter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpFilter;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.io.IOException;
         "/exchangeRates"
 })
 
-public class EncodingFilter extends Filter {
+public class EncodingFilter extends HttpFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {

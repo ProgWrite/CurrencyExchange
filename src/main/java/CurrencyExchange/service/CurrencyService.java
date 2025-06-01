@@ -29,27 +29,16 @@ public class CurrencyService {
                 .collect(Collectors.toList());
     }
 
-
     public CurrencyDto getCurrencyByCode(String code) {
         Currencies currency = currencyDao.findByCode(code)
                 .orElseThrow(() -> new NotFoundException("Currency not found with code:" + code));
         return MappingUtils.convertToDto(currency);
     }
 
-    public CurrencyDto getCurrencyById(long id) {
-        Currencies currency = currencyDao.findById(id).
-                orElseThrow(() -> new NotFoundException("Currency not found with id: " + id));
-        return MappingUtils.convertToDto(currency);
-    }
-
     public CurrencyDto create(CurrencyDto currencyDto) {
-        try {
-            Currencies currency = MappingUtils.convertToEntity(currencyDto);
-            Currencies newCurrency = currencyDao.create(currency);
+        Currencies currency = MappingUtils.convertToEntity(currencyDto);
+        Currencies newCurrency = currencyDao.create(currency);
+        return MappingUtils.convertToDto(newCurrency);
 
-            return MappingUtils.convertToDto(newCurrency);
-        } catch (RuntimeException e) {
-            throw new ServiceException("Currency creation failed.");
-        }
     }
 }
