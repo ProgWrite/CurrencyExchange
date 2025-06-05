@@ -2,7 +2,6 @@ package CurrencyExchange.utils;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.dto.ExchangeRateRequestDto;
-import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.InvalidParameterException;
 
 import java.math.BigDecimal;
@@ -13,6 +12,7 @@ import java.util.stream.Collectors;
 public class ValidationUtils {
     private final static int REQUIRED_LENGTH_FOR_CODE = 3;
     private final static int REQUIRED_LENGTH_FOR_EXCHANGE_RATE = 6;
+    private final static int MAXIMUM_LENGTH = 30;
     private static Set<String> currencyCodes;
 
     public static void validate(CurrencyDto currencyDto) {
@@ -29,7 +29,8 @@ public class ValidationUtils {
         if(sign == null || sign.isBlank()){
             throw new InvalidParameterException("Missing parameter - sign");
         }
-
+        checkRequiredLength(name);
+        checkRequiredLength(sign);
         validateCurrencyCode(code);
     }
 
@@ -53,13 +54,10 @@ public class ValidationUtils {
         if (rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidParameterException("Invalid parameter - rate must be non-negative");
         }
+
         validateCurrencyCode(baseCurrencyCode);
         validateCurrencyCode(targetCurrencyCode);
     }
-
-
-
-
 
 
     public static void validateCurrencyCode(String code) {
@@ -83,6 +81,12 @@ public class ValidationUtils {
     public static void checkLength(String exchangeRateCode){
         if(exchangeRateCode.length() != REQUIRED_LENGTH_FOR_EXCHANGE_RATE) {
             throw new InvalidParameterException("The exchange rate must contain 6 characters and be in the correct format.");
+        }
+    }
+
+    private static void checkRequiredLength(String parameterName){
+        if(parameterName.length() > MAXIMUM_LENGTH) {
+            throw new InvalidParameterException("Maximum possible length is " + MAXIMUM_LENGTH + " characters");
         }
     }
 

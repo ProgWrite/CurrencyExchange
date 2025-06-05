@@ -3,9 +3,7 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeRatesDto;
 import CurrencyExchange.exceptions.InvalidParameterException;
-import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.service.ExchangeRatesService;
-import CurrencyExchange.utils.ErrorResponseHandler;
 import CurrencyExchange.utils.ValidationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -21,7 +19,6 @@ import java.math.BigDecimal;
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
-    private final CurrencyService currencyService = CurrencyService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -61,7 +58,6 @@ public class ExchangeRateServlet extends HttpServlet {
 
         ValidationUtils.validateCurrencyCode(baseCurrencyCode);
         ValidationUtils.validateCurrencyCode(targetCurrencyCode);
-
 
 
         String parameter = req.getReader().readLine();

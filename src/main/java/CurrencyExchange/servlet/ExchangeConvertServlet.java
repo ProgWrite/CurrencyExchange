@@ -1,9 +1,10 @@
 package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.ExchangeConvertDto;
-import CurrencyExchange.service.CurrencyService;
+import CurrencyExchange.dto.ExchangeRateRequestDto;
+import CurrencyExchange.exceptions.InvalidParameterException;
 import CurrencyExchange.service.ExchangeService;
-import CurrencyExchange.utils.ErrorResponseHandler;
+import CurrencyExchange.utils.ValidationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,8 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 
 @WebServlet("/exchange/*")
@@ -22,9 +21,6 @@ import java.util.regex.Pattern;
 public class ExchangeConvertServlet extends HttpServlet {
 
     private final ExchangeService exchangeService = ExchangeService.getInstance();
-    private final CurrencyService currencyService = CurrencyService.getInstance();
-    Predicate<String> isEmpty = str -> str == null || str.trim().isEmpty();
-    private final static Pattern CHECK_AMOUNT = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -32,45 +28,25 @@ public class ExchangeConvertServlet extends HttpServlet {
         String from = req.getParameter("from");
         String to = req.getParameter("to");
         String amountParam = req.getParameter("amount");
+
         String exchangeRateCode = from + to;
-
-
-        if (isEmpty.test(from) || isEmpty.test(to) || isEmpty.test(amountParam)) {
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    "The required form field is missing. Enter the base currency code, target currency code, amount and try again.");
-            return;
-        }
-
-        if(!isCurrenciesExist(from, to)) {
-            ErrorResponseHandler.sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND,
-                    "Base currency or target currency don't exist! Add a new currency and try again");
-            return;
-        }
-
-        if(!isAmountCorrect(amountParam, resp)){
-            return;
-        }
+        ExchangeRateRequestDto exchangeRateRequestDto = new ExchangeRateRequestDto(from, to, convertToNumber(amountParam));
+        ValidationUtils.validate(exchangeRateRequestDto);
 
         BigDecimal amount = new BigDecimal(amountParam);
         ExchangeConvertDto exchangeConvertDto = exchangeService.makeExchange(exchangeRateCode, amount);
         objectMapper.writeValue(resp.getWriter(), exchangeConvertDto);
     }
 
-    private boolean isCurrenciesExist(String baseCurrencyCode, String targetCurrencyCode) {
-        if (currencyService.getCurrencyByCode(baseCurrencyCode) != null && currencyService.getCurrencyByCode(targetCurrencyCode) != null) {
-            return true;
+    private static BigDecimal convertToNumber(String amount) {
+        if(!amount.matches("-?\\d+(\\.\\d+)?")){
+            throw new InvalidParameterException("The amount must contain only digits");
         }
-        return false;
-    }
-
-    private boolean isAmountCorrect(String amount, HttpServletResponse response) throws IOException {
-        if(!CHECK_AMOUNT.matcher(amount).matches()){
-            ErrorResponseHandler.sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "Amount must contain only numbers or floating point numbers");
-            return false;
+        try {
+            return BigDecimal.valueOf(Double.parseDouble(amount));
         }
-        return true;
+        catch (NumberFormatException e) {
+            throw new InvalidParameterException("Parameter rate must be a number");
+        }
     }
-
-
 }

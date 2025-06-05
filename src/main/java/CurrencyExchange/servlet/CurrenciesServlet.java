@@ -2,7 +2,6 @@ package CurrencyExchange.servlet;
 
 import CurrencyExchange.dto.CurrencyDto;
 import CurrencyExchange.service.CurrencyService;
-import CurrencyExchange.utils.ErrorResponseHandler;
 import CurrencyExchange.utils.ValidationUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

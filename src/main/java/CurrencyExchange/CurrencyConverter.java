@@ -6,7 +6,6 @@ import CurrencyExchange.dto.ExchangeConvertDto;
 import CurrencyExchange.entity.Currencies;
 import CurrencyExchange.entity.ExchangeRates;
 import CurrencyExchange.exceptions.NotFoundException;
-import CurrencyExchange.service.CurrencyService;
 import CurrencyExchange.utils.MappingUtils;
 
 
@@ -15,7 +14,6 @@ import java.math.BigDecimal;
 
 public class CurrencyConverter {
     private final static CurrencyConverter INSTANCE = new CurrencyConverter();
-    private final CurrencyService currencyService = CurrencyService.getInstance();
     private final ExchangeRatesDao exchangeRatesDao = ExchangeRatesDao.getInstance();
 
 
